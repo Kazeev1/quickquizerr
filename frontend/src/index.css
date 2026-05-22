@@ -36,4 +36,34 @@
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
+  /* Numbered circle badge inside cards */
+  .num-badge {
+    @apply bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-medium
+           dark:bg-gray-700 dark:text-gray-300;
+  }
+}
+
+@layer utilities {
+  /* Dark mode text helpers — use these instead of bare text-gray-* */
+  .text-muted {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+  .text-secondary {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+  .text-primary-content {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+  .text-body {
+    @apply text-gray-700 dark:text-gray-300;
+  }
+  .bg-subtle {
+    @apply bg-gray-50 dark:bg-gray-800;
+  }
+  .bg-inner {
+    @apply bg-gray-100 dark:bg-gray-700;
+  }
+  .border-subtle {
+    @apply border-gray-200 dark:border-gray-700;
+  }
 }

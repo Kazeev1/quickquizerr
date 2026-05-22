@@ -78,13 +78,13 @@ export default function TestDetail() {
       {/* Header */}
       <div className="card p-6 mb-6">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">{test.title}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{test.title}</h1>
           <span className={`badge shrink-0 ${test.access_type === 'private' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
             {test.access_type === 'private' ? <><Lock size={10} className="mr-1" />Приватный</> : <><Globe size={10} className="mr-1" />Публичный</>}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-gray-600 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-400 mb-6">
           {test.university && (
             <div className="flex items-center gap-1.5">
               <Building2 size={15} className="text-gray-400" />
@@ -167,21 +167,19 @@ export default function TestDetail() {
           <div className="space-y-3">
             {questions.slice(0, 5).map((q, i) => (
               <div key={q.id} className="flex gap-3 text-sm">
-                <span className="bg-gray-100 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center shrink-0 text-xs font-medium">
-                  {i + 1}
-                </span>
-                <p className="text-gray-700 line-clamp-2">{q.text}</p>
+                <span className="num-badge">{i + 1}</span>
+                <p className="text-gray-700 dark:text-gray-300 line-clamp-2">{q.text}</p>
               </div>
             ))}
             {questions.length > 5 && (
-              <p className="text-sm text-gray-400 pl-9">... и ещё {questions.length - 5} вопросов</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 pl-9">... и ещё {questions.length - 5} вопросов</p>
             )}
           </div>
         </div>
       )}
 
       <Modal open={deleteModal} onClose={() => setDeleteModal(false)} title="Удалить тест">
-        <p className="text-gray-600 mb-6">Вы уверены, что хотите удалить тест <strong>{test.title}</strong>? Это действие нельзя отменить.</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">Вы уверены, что хотите удалить тест <strong>{test.title}</strong>? Это действие нельзя отменить.</p>
         <div className="flex gap-3">
           <button onClick={() => setDeleteModal(false)} className="btn-secondary flex-1 justify-center">Отмена</button>
           <button onClick={handleDelete} disabled={deleting} className="btn-danger flex-1 justify-center">
