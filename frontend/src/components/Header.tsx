@@ -16,7 +16,7 @@ export default function Header() {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-bold text-xl text-indigo-600">
           <BookOpen size={24} />
-          QuickQuizerr
+          Quizify
         </Link>
 
         <nav className="flex items-center gap-3">

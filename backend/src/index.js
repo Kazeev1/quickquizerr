@@ -58,5 +58,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n✓ QuickQuizerr backend running on port ${PORT}`);
+  console.log(`\n✓ Quizify backend running on port ${PORT}`);
 });

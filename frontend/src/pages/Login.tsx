@@ -26,7 +26,7 @@ export default function Login() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <BookOpen size={40} className="mx-auto text-indigo-600 mb-3" />
-          <h1 className="text-2xl font-bold">Войти в QuickQuizerr</h1>
+          <h1 className="text-2xl font-bold">Войти в Quizify</h1>
           <p className="text-gray-500 mt-1">Введите ваши данные</p>
         </div>
 
