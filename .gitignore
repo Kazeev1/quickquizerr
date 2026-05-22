@@ -2,3 +2,4 @@ node_modules/
 backend/data/
 .env
 frontend/.env
+.claude/
