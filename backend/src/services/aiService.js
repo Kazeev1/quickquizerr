@@ -11,7 +11,7 @@ const MODEL = 'gpt-4.1-nano';
  */
 async function extractQuestionsFromText(text, questionType = 'single', docMode = 'with_answers') {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY не настроен. Добавьте ключ в файл .env');
+    throw new Error('OPENAI_API_KEY is not configured. Add the key to the .env file');
   }
 
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -19,40 +19,40 @@ async function extractQuestionsFromText(text, questionType = 'single', docMode =
 
   const typeNote =
     questionType === 'multiple'
-      ? 'Некоторые вопросы могут иметь НЕСКОЛЬКО правильных ответов.'
-      : 'Каждый вопрос имеет РОВНО ОДИН правильный ответ.';
+      ? 'Some questions may have MULTIPLE correct answers.'
+      : 'Each question has EXACTLY ONE correct answer.';
 
   let answerInstruction;
   if (docMode === 'with_answers') {
-    answerInstruction = `В документе ЕСТЬ правильные ответы — они могут быть помечены символами (*, +, ✓, жирным шрифтом, подчёркиванием, буквой в скобках и т.п.).
-Твоя задача: найти именно отмеченный ответ, НЕ угадывать.
-- Если ответ явно помечен → correct_answers = [индекс], confidence = 90–100
-- Если пометка неоднозначна → confidence = 50–79
-- Если ответ не найден совсем → correct_answers = [0], confidence = 0`;
+    answerInstruction = `The document CONTAINS correct answers — they may be marked with symbols (*, +, ✓, bold text, underline, a letter in parentheses, etc.).
+Your task: find the marked answer, do NOT guess.
+- If the answer is clearly marked → correct_answers = [index], confidence = 90–100
+- If the marking is ambiguous → confidence = 50–79
+- If no answer is found at all → correct_answers = [0], confidence = 0`;
   } else {
-    answerInstruction = `В документе НЕТ правильных ответов — только вопросы и варианты.
-НЕ пытайся угадать правильный ответ.
-Для ВСЕХ вопросов выставляй: correct_answers = [0], confidence = 0
-Пользователь сам укажет правильные ответы при редактировании теста.`;
+    answerInstruction = `The document does NOT contain correct answers — only questions and options.
+Do NOT try to guess the correct answer.
+For ALL questions set: correct_answers = [0], confidence = 0
+The user will specify correct answers manually when editing the test.`;
   }
 
-  const systemPrompt = `Ты — ассистент по извлечению тестовых вопросов из учебных документов.
+  const systemPrompt = `You are an assistant that extracts test questions from educational documents.
 
-Правила:
-- НЕ переводи текст
-- НЕ переформулируй вопросы
-- НЕ изменяй варианты ответов
-- Сохраняй оригинальный язык документа
+Rules:
+- Do NOT translate the text
+- Do NOT rephrase questions
+- Do NOT alter answer options
+- Preserve the original language of the document
 - ${typeNote}
-- Если у вопроса нет явных вариантов — создай 4 правдоподобных варианта на основе контекста
+- If a question has no explicit answer options — generate 4 plausible options based on context
 
 ${answerInstruction}
 
-Верни ТОЛЬКО JSON-массив, без пояснений:
+Return ONLY a JSON array, no explanations:
 [
   {
-    "text": "Текст вопроса",
-    "options": ["Вариант А", "Вариант Б", "Вариант В", "Вариант Г"],
+    "text": "Question text",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
     "correct_answers": [0],
     "confidence": 95
   }
@@ -62,7 +62,7 @@ ${answerInstruction}
     model: MODEL,
     messages: [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Извлеки ВСЕ вопросы:\n\n${truncatedText}` },
+      { role: 'user', content: `Extract ALL questions:\n\n${truncatedText}` },
     ],
     response_format: { type: 'json_object' },
     temperature: docMode === 'with_answers' ? 0.1 : 0.0,
@@ -75,7 +75,7 @@ ${answerInstruction}
     parsed = JSON.parse(responseText);
   } catch {
     const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error('ИИ не вернул корректный JSON с вопросами');
+    if (!jsonMatch) throw new Error('AI did not return valid JSON with questions');
     parsed = JSON.parse(jsonMatch[0]);
   }
 
@@ -84,7 +84,7 @@ ${answerInstruction}
     : parsed.questions || parsed.items || Object.values(parsed)[0];
 
   if (!Array.isArray(questions) || questions.length === 0) {
-    throw new Error('Вопросы не найдены в документе');
+    throw new Error('No questions found in the document');
   }
 
   const valid = questions
@@ -97,10 +97,10 @@ ${answerInstruction}
     }));
 
   if (valid.length === 0) {
-    throw new Error('Не удалось извлечь ни одного корректного вопроса');
+    throw new Error('Could not extract any valid questions');
   }
 
-  // В режиме "без ответов" все вопросы сразу идут на ручную проверку
+  // In "without answers" mode all questions go directly to manual review
   if (docMode === 'without_answers') {
     return { confirmed: [], pending: valid, total: valid.length };
   }
@@ -121,7 +121,7 @@ ${answerInstruction}
 
 async function explainQuestion(text, options, correctAnswers) {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY не настроен');
+    throw new Error('OPENAI_API_KEY is not configured');
   }
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const correct = correctAnswers.map((i) => `"${options[i]}"`).join(', ');
@@ -132,13 +132,13 @@ async function explainQuestion(text, options, correctAnswers) {
       {
         role: 'system',
         content:
-          'Ты — преподаватель. Дай краткое объяснение (2-4 предложения) почему указанный ответ является правильным. Отвечай на языке вопроса. Не повторяй вопрос.',
+          'You are a teacher. Give a brief explanation (2-4 sentences) of why the given answer is correct. Reply in the same language as the question. Do not repeat the question.',
       },
       {
         role: 'user',
-        content: `Вопрос: ${text}\n\nВарианты:\n${options
+        content: `Question: ${text}\n\nOptions:\n${options
           .map((o, i) => `${i + 1}. ${o}`)
-          .join('\n')}\n\nПравильный ответ: ${correct}\n\nОбъясни почему этот ответ правильный.`,
+          .join('\n')}\n\nCorrect answer: ${correct}\n\nExplain why this answer is correct.`,
       },
     ],
     temperature: 0.7,
