@@ -55,7 +55,7 @@ export default function Results() {
         <Award size={48} className={`mx-auto mb-3 ${grade.color}`} />
         <div className={`text-6xl font-bold mb-2 ${grade.color}`}>{pct}%</div>
         <div className={`text-xl font-semibold mb-4 ${grade.color}`}>{grade.label}</div>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Правильных ответов: <strong>{result.score}</strong> из <strong>{result.total}</strong>
         </p>
       </div>
@@ -65,17 +65,17 @@ export default function Results() {
         <div className="card p-4 text-center">
           <CheckCircle size={20} className="mx-auto text-green-500 mb-1" />
           <div className="text-xl font-bold text-green-600">{result.score}</div>
-          <div className="text-xs text-gray-500">Верно</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Верно</div>
         </div>
         <div className="card p-4 text-center">
           <XCircle size={20} className="mx-auto text-red-500 mb-1" />
           <div className="text-xl font-bold text-red-600">{result.total - result.score}</div>
-          <div className="text-xs text-gray-500">Неверно</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Неверно</div>
         </div>
         <div className="card p-4 text-center">
           <Clock size={20} className="mx-auto text-gray-400 mb-1" />
-          <div className="text-xl font-bold text-gray-700">{formatTime(result.time_spent)}</div>
-          <div className="text-xs text-gray-500">Время</div>
+          <div className="text-xl font-bold text-gray-700 dark:text-gray-300">{formatTime(result.time_spent)}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">Время</div>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function Results() {
               <XCircle size={18} />
               Ошибки ({wrongAnswers.length})
             </span>
-            <span className="text-sm text-gray-400">{showErrors ? 'Скрыть' : 'Показать'}</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500">{showErrors ? 'Скрыть' : 'Показать'}</span>
           </button>
 
           {showErrors && (
@@ -114,8 +114,8 @@ export default function Results() {
                 const q = questions.find((x) => x.id === ans.question_id);
                 if (!q) return null;
                 return (
-                  <div key={ans.question_id} className="border-t pt-4">
-                    <p className="font-medium text-sm text-gray-800 mb-2">{q.text}</p>
+                  <div key={ans.question_id} className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <p className="font-medium text-sm text-gray-800 dark:text-gray-200 mb-2">{q.text}</p>
                     <div className="space-y-1">
                       {q.options.map((opt, oi) => {
                         const isCorrect = q.correct_answers.includes(oi);
@@ -125,10 +125,10 @@ export default function Results() {
                             key={oi}
                             className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded ${
                               isCorrect
-                                ? 'bg-green-50 text-green-800'
+                                ? 'bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                 : wasSelected
-                                ? 'bg-red-50 text-red-800'
-                                : 'text-gray-500'
+                                ? 'bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                : 'text-gray-500 dark:text-gray-400'
                             }`}
                           >
                             {isCorrect ? (

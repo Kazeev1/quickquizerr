@@ -10,7 +10,7 @@ export default function TestCard({ test }: { test: Test }) {
   return (
     <Link to={`/tests/${test.id}`} className="card p-5 hover:shadow-md transition-shadow block group">
       <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
           {test.title}
         </h3>
         <span className={`badge shrink-0 ${test.access_type === 'private' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
@@ -18,7 +18,7 @@ export default function TestCard({ test }: { test: Test }) {
         </span>
       </div>
 
-      <div className="space-y-1.5 text-sm text-gray-500">
+      <div className="space-y-1.5 text-sm text-gray-500 dark:text-gray-400">
         {test.university && (
           <div className="flex items-center gap-1.5">
             <Building2 size={14} />

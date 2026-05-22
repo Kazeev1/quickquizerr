@@ -27,15 +27,13 @@ export default function Login() {
         <div className="text-center mb-8">
           <BookOpen size={40} className="mx-auto text-indigo-600 mb-3" />
           <h1 className="text-2xl font-bold">Войти в Quizify</h1>
-          <p className="text-gray-500 mt-1">Введите ваши данные</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Введите ваши данные</p>
         </div>
 
         <div className="card p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-                {error}
-              </div>
+              <div className="alert-error">{error}</div>
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -66,7 +64,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
           Нет аккаунта?{' '}
           <Link to="/register" className="text-indigo-600 font-medium hover:underline">
             Зарегистрироваться

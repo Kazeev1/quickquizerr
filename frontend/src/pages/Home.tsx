@@ -50,8 +50,8 @@ export default function Home() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Тесты</h1>
-          <p className="text-gray-500 text-sm mt-1">{total} тестов в базе</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Тесты</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{total} тестов в базе</p>
         </div>
         {user && (
           <Link to="/create" className="btn-primary">
@@ -102,8 +102,8 @@ export default function Home() {
         <LoadingSpinner label="Загрузка тестов..." />
       ) : tests.length === 0 ? (
         <div className="text-center py-20">
-          <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500 text-lg">Тесты не найдены</p>
+          <BookOpen size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 text-lg">Тесты не найдены</p>
           {user && (
             <Link to="/create" className="btn-primary mt-4">
               <Plus size={16} />
@@ -128,7 +128,7 @@ export default function Home() {
               >
                 Назад
               </button>
-              <span className="flex items-center px-4 text-sm text-gray-600">
+              <span className="flex items-center px-4 text-sm text-gray-600 dark:text-gray-400">
                 {page} / {totalPages}
               </span>
               <button

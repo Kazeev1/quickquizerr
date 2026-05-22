@@ -164,19 +164,19 @@ export default function TakeTest() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="font-semibold text-gray-900 truncate max-w-xs">{test.title}</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="font-semibold text-gray-900 dark:text-gray-100 truncate max-w-xs">{test.title}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {mode === 'exam' ? 'Режим экзамена' : 'Обучение'} · {questions.length} вопросов
           </p>
         </div>
-        <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg px-3 py-1.5 text-sm font-mono font-medium text-gray-700">
+        <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5 text-sm font-mono font-medium text-gray-700 dark:text-gray-300">
           <Clock size={14} />
           {formatTime(elapsed)}
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 bg-gray-200 rounded-full mb-6">
+      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full mb-6">
         <div className="h-2 bg-indigo-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
       </div>
 
@@ -189,13 +189,13 @@ export default function TakeTest() {
           : ''
       }`}>
         <div className="flex items-start gap-3 mb-5">
-          <span className="bg-indigo-100 text-indigo-700 font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0 text-sm">
+          <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0 text-sm">
             {current + 1}
           </span>
-          <p className="text-gray-900 font-medium leading-relaxed">{q.text}</p>
+          <p className="text-gray-900 dark:text-gray-100 font-medium leading-relaxed">{q.text}</p>
         </div>
 
-        <p className="text-xs text-gray-400 mb-3 pl-11">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3 pl-11">
           {isMultiple ? 'Выберите все правильные ответы' : 'Выберите один правильный ответ'}
         </p>
 
@@ -205,21 +205,21 @@ export default function TakeTest() {
             const isCorrectOpt = q.correct_answers.includes(oi);
 
             // Styling after confirmation
-            let optClass = 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50 cursor-pointer';
+            let optClass = 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer dark:text-gray-200';
             let icon = null;
 
             if (isConfirmed) {
               if (isCorrectOpt) {
-                optClass = 'border-green-500 bg-green-50 text-green-900 cursor-default';
+                optClass = 'border-green-500 bg-green-50 text-green-900 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600 cursor-default';
                 icon = <CheckCircle size={16} className="text-green-500 shrink-0" />;
               } else if (isSel && !isCorrectOpt) {
-                optClass = 'border-red-400 bg-red-50 text-red-900 cursor-default';
+                optClass = 'border-red-400 bg-red-50 text-red-900 dark:bg-red-900/30 dark:text-red-300 dark:border-red-600 cursor-default';
                 icon = <XCircle size={16} className="text-red-400 shrink-0" />;
               } else {
-                optClass = 'border-gray-100 text-gray-400 cursor-default';
+                optClass = 'border-gray-100 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-default';
               }
             } else if (isSel) {
-              optClass = 'border-indigo-500 bg-indigo-50 text-indigo-900 cursor-pointer';
+              optClass = 'border-indigo-500 bg-indigo-50 text-indigo-900 dark:bg-indigo-900/40 dark:text-indigo-200 cursor-pointer';
             }
 
             return (
@@ -250,7 +250,7 @@ export default function TakeTest() {
         {/* Feedback banner (normal mode) */}
         {isConfirmed && (
           <div className={`mt-4 ml-11 flex items-center gap-2 text-sm font-medium rounded-lg px-4 py-2.5 ${
-            currentIsCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            currentIsCorrect ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
           }`}>
             {currentIsCorrect
               ? <><CheckCircle size={16} /> Верно! Отличная работа.</>
@@ -274,8 +274,8 @@ export default function TakeTest() {
                 }
               </button>
             ) : (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-sm text-indigo-900 leading-relaxed">
-                <div className="flex items-center gap-1.5 font-semibold mb-1.5 text-indigo-700">
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg px-4 py-3 text-sm text-indigo-900 dark:text-indigo-200 leading-relaxed">
+                <div className="flex items-center gap-1.5 font-semibold mb-1.5 text-indigo-700 dark:text-indigo-400">
                   <Lightbulb size={14} /> Объяснение
                 </div>
                 {explanations[current]}
@@ -304,7 +304,7 @@ export default function TakeTest() {
           )}
         </div>
 
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-gray-500 dark:text-gray-400">
           {mode === 'normal'
             ? `${Object.keys(confirmed).length} / ${questions.length}`
             : `Отвечено: ${answeredCount} / ${questions.length}`
@@ -319,7 +319,7 @@ export default function TakeTest() {
               <ChevronRight size={16} />
             </button>
           ) : (
-            <span className="text-xs text-gray-400 italic">Выберите ответ</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 italic">Выберите ответ</span>
           )
         ) : (
           (mode === 'exam' || isConfirmed) ? (
@@ -331,7 +331,7 @@ export default function TakeTest() {
               {submitting ? 'Сохранение...' : 'Завершить тест'}
             </button>
           ) : (
-            <span className="text-xs text-gray-400 italic">Выберите ответ</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 italic">Выберите ответ</span>
           )
         )}
       </div>
@@ -358,8 +358,8 @@ export default function TakeTest() {
                   : wrong
                   ? 'bg-red-400 text-white'
                   : answers[i]
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
               }`}
             >
               {i + 1}
