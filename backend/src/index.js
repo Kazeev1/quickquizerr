@@ -7,6 +7,8 @@ const { initDB } = require('./db/init');
 const authRoutes = require('./routes/auth');
 const testRoutes = require('./routes/tests');
 const adminRoutes = require('./routes/admin');
+const aiRoutes = require('./routes/ai');
+const compareRoutes = require('./routes/compare');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -33,6 +35,8 @@ initDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/tests', testRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/compare', compareRoutes);
 
 app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {

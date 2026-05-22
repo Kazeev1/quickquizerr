@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Clock, ChevronRight, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, ChevronRight, AlertCircle, CheckCircle, XCircle, Lightbulb, Loader2 } from 'lucide-react';
 import api from '../api/client';
 import type { Test, Question } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -31,6 +31,8 @@ export default function TakeTest() {
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
   // confirmed = locked + feedback shown (normal mode only)
   const [confirmed, setConfirmed] = useState<Record<number, boolean>>({});
+  const [explanations, setExplanations] = useState<Record<number, string>>({});
+  const [loadingExplain, setLoadingExplain] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -96,6 +98,24 @@ export default function TakeTest() {
   };
 
   const goNext = () => setCurrent((c) => c + 1);
+
+  const fetchExplanation = async (idx: number) => {
+    if (explanations[idx] || loadingExplain[idx]) return;
+    const question = questions[idx];
+    setLoadingExplain((l) => ({ ...l, [idx]: true }));
+    try {
+      const { data } = await api.post('/ai/explain', {
+        text: question.text,
+        options: question.options,
+        correct_answers: question.correct_answers,
+      });
+      setExplanations((e) => ({ ...e, [idx]: data.explanation }));
+    } catch {
+      setExplanations((e) => ({ ...e, [idx]: 'Не удалось получить объяснение. Попробуйте позже.' }));
+    } finally {
+      setLoadingExplain((l) => ({ ...l, [idx]: false }));
+    }
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -236,6 +256,31 @@ export default function TakeTest() {
               ? <><CheckCircle size={16} /> Верно! Отличная работа.</>
               : <><XCircle size={16} /> Неверно. Правильный ответ выделен зелёным.</>
             }
+          </div>
+        )}
+
+        {/* AI Explanation (normal mode, after confirming) */}
+        {isConfirmed && (
+          <div className="mt-3 ml-11">
+            {!explanations[current] ? (
+              <button
+                onClick={() => fetchExplanation(current)}
+                disabled={loadingExplain[current]}
+                className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+              >
+                {loadingExplain[current]
+                  ? <><Loader2 size={15} className="animate-spin" /> Генерирую объяснение...</>
+                  : <><Lightbulb size={15} /> Объяснить ответ</>
+                }
+              </button>
+            ) : (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-sm text-indigo-900 leading-relaxed">
+                <div className="flex items-center gap-1.5 font-semibold mb-1.5 text-indigo-700">
+                  <Lightbulb size={14} /> Объяснение
+                </div>
+                {explanations[current]}
+              </div>
+            )}
           </div>
         )}
 

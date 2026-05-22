@@ -11,6 +11,7 @@ import TakeTest from './pages/TakeTest';
 import Results from './pages/Results';
 import EditTest from './pages/EditTest';
 import Admin from './pages/Admin';
+import Compare from './pages/Compare';
 import NotFound from './pages/NotFound';
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
@@ -59,6 +60,14 @@ function AppRoutes() {
               <AdminRoute>
                 <Admin />
               </AdminRoute>
+            }
+          />
+          <Route
+            path="/compare"
+            element={
+              <PrivateRoute>
+                <Compare />
+              </PrivateRoute>
             }
           />
           <Route path="*" element={<NotFound />} />

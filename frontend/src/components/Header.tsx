@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut, User, Shield, Plus } from 'lucide-react';
+import { BookOpen, LogOut, User, Shield, Plus, GitCompare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Header() {
@@ -25,6 +25,10 @@ export default function Header() {
               <Link to="/create" className="btn-primary btn-sm">
                 <Plus size={16} />
                 Создать тест
+              </Link>
+              <Link to="/compare" className="btn-secondary btn-sm">
+                <GitCompare size={16} />
+                Сравнить файлы
               </Link>
               {user.role === 'admin' && (
                 <Link to="/admin" className="btn-secondary btn-sm">

@@ -119,4 +119,70 @@ ${answerInstruction}
   return { confirmed, pending, total: valid.length, usage };
 }
 
-module.exports = { extractQuestionsFromText, CONFIDENCE_THRESHOLD };
+async function explainQuestion(text, options, correctAnswers) {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY не настроен');
+  }
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const correct = correctAnswers.map((i) => `"${options[i]}"`).join(', ');
+
+  const response = await client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      {
+        role: 'system',
+        content:
+          'Ты — преподаватель. Дай краткое объяснение (2-4 предложения) почему указанный ответ является правильным. Отвечай на языке вопроса. Не повторяй вопрос.',
+      },
+      {
+        role: 'user',
+        content: `Вопрос: ${text}\n\nВарианты:\n${options
+          .map((o, i) => `${i + 1}. ${o}`)
+          .join('\n')}\n\nПравильный ответ: ${correct}\n\nОбъясни почему этот ответ правильный.`,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 400,
+  });
+
+  return response.choices[0].message.content.trim();
+}
+
+async function extractUniqueQuestions(files) {
+  function normalizeText(t) {
+    return t.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  const fileResults = [];
+  for (const file of files) {
+    const extracted = await extractQuestionsFromText(file.text, 'single', 'with_answers');
+    const all = [...extracted.confirmed, ...extracted.pending];
+    fileResults.push({ name: file.name, questions: all });
+  }
+
+  // Deduplicate across all files by normalized question text
+  const seen = new Map();
+  const uniqueQuestions = [];
+
+  for (const file of fileResults) {
+    for (const q of file.questions) {
+      const key = normalizeText(q.text);
+      if (!seen.has(key)) {
+        seen.set(key, true);
+        uniqueQuestions.push({ ...q, source: file.name });
+      }
+    }
+  }
+
+  const totalAcrossFiles = fileResults.reduce((sum, f) => sum + f.questions.length, 0);
+
+  return {
+    files: fileResults.map((f) => ({ name: f.name, count: f.questions.length })),
+    unique_questions: uniqueQuestions,
+    unique_count: uniqueQuestions.length,
+    total_count: totalAcrossFiles,
+    duplicate_count: totalAcrossFiles - uniqueQuestions.length,
+  };
+}
+
+module.exports = { extractQuestionsFromText, explainQuestion, extractUniqueQuestions, CONFIDENCE_THRESHOLD };
