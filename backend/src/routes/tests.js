@@ -214,6 +214,19 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req, res
       mode
     );
 
+    // Deduplicate questions by normalized text before saving
+    const normalize = (t) => t.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+    const seenTexts = new Set();
+    const filterUnique = (qs) => qs.filter((q) => {
+      const key = normalize(q.text);
+      if (seenTexts.has(key)) return false;
+      seenTexts.add(key);
+      return true;
+    });
+    const uniqueConfirmed = filterUnique(confirmed);
+    const uniquePending = filterUnique(pending);
+    const duplicatesRemoved = total - uniqueConfirmed.length - uniquePending.length;
+
     // Step 5: Create test
     const testResult = db
       .prepare(
@@ -236,7 +249,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req, res
       `INSERT INTO questions (test_id, text, options, correct_answers, order_num)
        VALUES (?, ?, ?, ?, ?)`
     );
-    confirmed.forEach((q, i) => {
+    uniqueConfirmed.forEach((q, i) => {
       insertQ.run(testId, q.text, JSON.stringify(q.options), JSON.stringify(q.correct_answers), i);
     });
 
@@ -244,7 +257,7 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req, res
     const insertP = db.prepare(
       `INSERT INTO pending_questions (test_id, text, options, confidence) VALUES (?, ?, ?, ?)`
     );
-    pending.forEach((q) => {
+    uniquePending.forEach((q) => {
       insertP.run(testId, q.text, JSON.stringify(q.options), q.confidence);
     });
 
@@ -256,8 +269,9 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req, res
       req.user.id,
       JSON.stringify({
         total,
-        confirmed: confirmed.length,
-        pending: pending.length,
+        confirmed: uniqueConfirmed.length,
+        pending: uniquePending.length,
+        duplicates_removed: duplicatesRemoved,
         tokens: usage,
       })
     );
