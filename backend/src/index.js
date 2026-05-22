@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
+const fs = require('fs');
 const { initDB } = require('./db/init');
 const authRoutes = require('./routes/auth');
 const testRoutes = require('./routes/tests');
@@ -37,6 +39,15 @@ app.use('/api/tests', testRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/compare', compareRoutes);
+
+// Serve frontend static files (production)
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 
 app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {
