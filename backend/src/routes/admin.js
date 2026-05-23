@@ -13,6 +13,8 @@ router.get('/stats', (req, res) => {
   const results = db.prepare('SELECT COUNT(*) as cnt FROM test_results').get().cnt;
   const aiErrors = db.prepare(`SELECT COUNT(*) as cnt FROM ai_logs WHERE status = 'error'`).get().cnt;
   const pending = db.prepare('SELECT COUNT(*) as cnt FROM pending_questions').get().cnt;
+  const anonActions = db.prepare(`SELECT COUNT(*) as cnt FROM user_logs WHERE user_id IS NULL`).get().cnt;
+  const loginFailed = db.prepare(`SELECT COUNT(*) as cnt FROM user_logs WHERE action IN ('login_failed', 'login_blocked')`).get().cnt;
 
   const recentActivity = db
     .prepare(
@@ -22,7 +24,7 @@ router.get('/stats', (req, res) => {
     )
     .all();
 
-  res.json({ users, tests, results, aiErrors, pending, recentActivity });
+  res.json({ users, tests, results, aiErrors, pending, anonActions, loginFailed, recentActivity });
 });
 
 // GET /api/admin/users

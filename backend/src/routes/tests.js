@@ -591,6 +591,14 @@ router.get('/:id/export', optionalAuth, (req, res) => {
   const content = lines.join('\n');
   const filename = `${test.title.replace(/[^\w\s\-а-яёА-ЯЁ]/g, '').trim() || 'test'}.txt`;
 
+  // Log anonymous export
+  if (!req.user) {
+    const db2 = getDB();
+    db2.prepare(
+      `INSERT INTO user_logs (user_id, action, details, ip) VALUES (NULL, 'anon_export', ?, ?)`
+    ).run(JSON.stringify({ test_id: Number(req.params.id), test_title: test.title }), req.ip);
+  }
+
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
   res.send(content);
@@ -617,6 +625,16 @@ router.post('/:id/results', optionalAuth, (req, res) => {
       JSON.stringify(answers || []),
       mode || 'normal'
     );
+
+  // Log anonymous test completion
+  if (!req.user) {
+    db.prepare(
+      `INSERT INTO user_logs (user_id, action, details, ip) VALUES (NULL, 'anon_take_test', ?, ?)`
+    ).run(
+      JSON.stringify({ test_id: test.id, score: score || 0, total: total || 0, mode: mode || 'normal' }),
+      req.ip
+    );
+  }
 
   res.status(201).json({ id: result.lastInsertRowid });
 });

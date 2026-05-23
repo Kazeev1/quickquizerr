@@ -70,14 +70,23 @@ router.post('/login', loginLimiter, async (req, res) => {
     const db = getDB();
     const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
     if (!user) {
+      db.prepare(
+        `INSERT INTO user_logs (user_id, action, details, ip) VALUES (NULL, 'login_failed', ?, ?)`
+      ).run(JSON.stringify({ reason: 'user_not_found', email: email.toLowerCase() }), req.ip);
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
     if (user.is_blocked) {
+      db.prepare(
+        `INSERT INTO user_logs (user_id, action, details, ip) VALUES (?, 'login_blocked', ?, ?)`
+      ).run(user.id, JSON.stringify({ email: user.email }), req.ip);
       return res.status(403).json({ error: 'Аккаунт заблокирован' });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
+      db.prepare(
+        `INSERT INTO user_logs (user_id, action, details, ip) VALUES (?, 'login_failed', ?, ?)`
+      ).run(user.id, JSON.stringify({ reason: 'wrong_password', email: user.email }), req.ip);
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 

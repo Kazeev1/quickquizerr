@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users, BookOpen, BarChart3, Shield, Ban, Trash2, RefreshCw,
-  CheckCircle, XCircle, AlertTriangle, Clock
+  CheckCircle, XCircle, AlertTriangle, Clock, UserX, ShieldAlert
 } from 'lucide-react';
 import api from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -51,6 +51,38 @@ export default function Admin() {
   );
 }
 
+const ACTION_STYLES: Record<string, string> = {
+  login:            'bg-blue-100 text-blue-700',
+  register:         'bg-green-100 text-green-700',
+  create_test:      'bg-indigo-100 text-indigo-700',
+  upload_test:      'bg-purple-100 text-purple-700',
+  admin_block_user: 'bg-red-100 text-red-700',
+  admin_delete_user:'bg-red-100 text-red-700',
+  login_failed:     'bg-rose-100 text-rose-700',
+  login_blocked:    'bg-rose-200 text-rose-800',
+  anon_take_test:   'bg-orange-100 text-orange-700',
+  anon_export:      'bg-amber-100 text-amber-700',
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  login:            'Вход',
+  register:         'Регистрация',
+  create_test:      'Создал тест',
+  upload_test:      'Загрузил файл',
+  admin_block_user: 'Заблок. пользователя',
+  admin_delete_user:'Удалил пользователя',
+  login_failed:     'Неудачный вход',
+  login_blocked:    'Вход заблокирован',
+  anon_take_test:   'Прошёл тест (аноним)',
+  anon_export:      'Скачал базу (аноним)',
+};
+
+function ActionBadge({ action }: { action: string }) {
+  const style = ACTION_STYLES[action] || 'bg-gray-100 text-gray-700';
+  const label = ACTION_LABELS[action] || action;
+  return <span className={`badge ${style}`}>{label}</span>;
+}
+
 function StatsTab() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -64,12 +96,25 @@ function StatsTab() {
 
   return (
     <div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {[
           { label: 'Пользователей', value: stats.users, color: 'text-blue-600', bg: 'bg-blue-50', Icon: Users },
           { label: 'Тестов', value: stats.tests, color: 'text-indigo-600', bg: 'bg-indigo-50', Icon: BookOpen },
           { label: 'Прохождений', value: stats.results, color: 'text-green-600', bg: 'bg-green-50', Icon: CheckCircle },
+        ].map(({ label, value, color, bg, Icon }) => (
+          <div key={label} className={`card p-5 ${bg}`}>
+            <Icon size={24} className={`mb-2 ${color}`} />
+            <div className={`text-3xl font-bold ${color}`}>{value}</div>
+            <div className="text-sm text-gray-600 mt-1">{label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {[
           { label: 'Ошибок ИИ', value: stats.aiErrors, color: 'text-red-600', bg: 'bg-red-50', Icon: XCircle },
+          { label: 'Действий анонимов', value: stats.anonActions ?? 0, color: 'text-orange-600', bg: 'bg-orange-50', Icon: UserX },
+          { label: 'Неудачных входов', value: stats.loginFailed ?? 0, color: 'text-rose-600', bg: 'bg-rose-50', Icon: ShieldAlert },
         ].map(({ label, value, color, bg, Icon }) => (
           <div key={label} className={`card p-5 ${bg}`}>
             <Icon size={24} className={`mb-2 ${color}`} />
@@ -94,12 +139,16 @@ function StatsTab() {
         <h2 className="font-semibold mb-4">Последние действия</h2>
         <div className="space-y-2">
           {stats.recentActivity.map((log: any) => (
-            <div key={log.id} className="flex items-center justify-between text-sm py-1.5 border-b last:border-0">
+            <div key={log.id} className="flex items-center justify-between text-sm py-1.5 border-b dark:border-gray-700 last:border-0">
               <div className="flex items-center gap-3">
-                <span className="badge bg-gray-100 text-gray-700">{log.action}</span>
-                <span className="text-gray-600">{log.username || 'Аноним'}</span>
+                <ActionBadge action={log.action} />
+                {log.user_id == null
+                  ? <span className="text-orange-500 font-medium flex items-center gap-1"><UserX size={13} /> Аноним</span>
+                  : <span className="text-gray-600 dark:text-gray-300">{log.username || `#${log.user_id}`}</span>
+                }
+                {log.ip && <span className="text-gray-400 text-xs font-mono hidden sm:inline">{log.ip}</span>}
               </div>
-              <span className="text-gray-400 text-xs">{new Date(log.created_at).toLocaleString('ru-RU')}</span>
+              <span className="text-gray-400 text-xs shrink-0">{new Date(log.created_at).toLocaleString('ru-RU')}</span>
             </div>
           ))}
         </div>
@@ -354,20 +403,11 @@ function UserLogsTab() {
 
   if (loading) return <LoadingSpinner />;
 
-  const actionColor: Record<string, string> = {
-    login: 'bg-blue-100 text-blue-700',
-    register: 'bg-green-100 text-green-700',
-    create_test: 'bg-indigo-100 text-indigo-700',
-    upload_test: 'bg-purple-100 text-purple-700',
-    admin_block_user: 'bg-red-100 text-red-700',
-    admin_delete_user: 'bg-red-100 text-red-700',
-  };
-
   return (
     <div>
       <h2 className="font-semibold mb-4">Журнал действий ({logs.length})</h2>
       <div className="card overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[460px]">
+        <table className="w-full text-sm min-w-[480px]">
           <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Пользователь</th>
@@ -378,12 +418,20 @@ function UserLogsTab() {
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <td className="px-4 py-2 dark:text-gray-300">{log.username || `#${log.user_id}`}</td>
+              <tr
+                key={log.id}
+                className={`border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30 ${
+                  log.user_id == null ? 'bg-orange-50/40 dark:bg-orange-900/10' : ''
+                }`}
+              >
                 <td className="px-4 py-2">
-                  <span className={`badge ${actionColor[log.action] || 'bg-gray-100 text-gray-700'}`}>
-                    {log.action}
-                  </span>
+                  {log.user_id == null
+                    ? <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-medium"><UserX size={13} /> Аноним</span>
+                    : <span className="dark:text-gray-300">{log.username || `#${log.user_id}`}</span>
+                  }
+                </td>
+                <td className="px-4 py-2">
+                  <ActionBadge action={log.action} />
                 </td>
                 <td className="px-4 py-2 text-gray-400 dark:text-gray-500 font-mono text-xs">{log.ip || '—'}</td>
                 <td className="px-4 py-2 text-gray-400 dark:text-gray-500 text-xs">{new Date(log.created_at).toLocaleString('ru-RU')}</td>
