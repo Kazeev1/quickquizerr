@@ -511,6 +511,91 @@ router.get('/:id/token-usage', authenticateToken, (req, res) => {
   res.json({ has_logs: true, prompt_tokens, completion_tokens, total_tokens, cost_usd, cost_kzt });
 });
 
+// GET /api/tests/:id/export?format=txt — download question bank as text file
+router.get('/:id/export', optionalAuth, (req, res) => {
+  const db = getDB();
+  const test = db.prepare('SELECT * FROM tests WHERE id = ? AND is_blocked = 0').get(req.params.id);
+  if (!test) return res.status(404).json({ error: 'Тест не найден' });
+
+  // Private test — only owner/admin can export
+  if (test.access_type === 'private') {
+    if (!req.user || (req.user.id !== test.author_id && req.user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Нет доступа' });
+    }
+  }
+
+  const questions = db
+    .prepare('SELECT * FROM questions WHERE test_id = ? ORDER BY order_num')
+    .all(req.params.id);
+
+  if (questions.length === 0) {
+    return res.status(400).json({ error: 'В тесте нет вопросов' });
+  }
+
+  const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const createdAt = new Date(test.created_at).toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+
+  const lines = [];
+  const sep = '═'.repeat(60);
+  const thin = '─'.repeat(60);
+
+  lines.push(sep);
+  lines.push(`  ${test.title}`);
+  if (test.university) lines.push(`  Университет: ${test.university}`);
+  lines.push(`  Автор: ${test.author_name || '—'}`);
+  lines.push(`  Дата создания: ${createdAt}`);
+  lines.push(`  Всего вопросов: ${questions.length}`);
+  lines.push(`  Тип ответов: ${test.question_type === 'multiple' ? 'Несколько правильных' : 'Один правильный'}`);
+  lines.push(sep);
+  lines.push('');
+
+  questions.forEach((q, idx) => {
+    let options, correctAnswers;
+    try { options = JSON.parse(q.options); } catch { options = []; }
+    try { correctAnswers = JSON.parse(q.correct_answers); } catch { correctAnswers = [0]; }
+
+    lines.push(`${idx + 1}. ${q.text}`);
+    lines.push('');
+
+    options.forEach((opt, oi) => {
+      const letter = LETTERS[oi] || String(oi + 1);
+      const isCorrect = correctAnswers.includes(oi);
+      if (isCorrect) {
+        lines.push(`   ${letter}) ${opt}  ✓  ← ПРАВИЛЬНЫЙ ОТВЕТ`);
+      } else {
+        lines.push(`   ${letter}) ${opt}`);
+      }
+    });
+
+    // Summary line for correct answers
+    const correctTexts = correctAnswers
+      .map((ci) => `${LETTERS[ci] || ci + 1}) ${options[ci] || '?'}`)
+      .join(', ');
+    lines.push('');
+    lines.push(`   Ответ: ${correctTexts}`);
+
+    if (idx < questions.length - 1) {
+      lines.push('');
+      lines.push(thin);
+      lines.push('');
+    }
+  });
+
+  lines.push('');
+  lines.push(sep);
+  lines.push(`  Экспортировано из Quizify — quizify.org`);
+  lines.push(sep);
+
+  const content = lines.join('\n');
+  const filename = `${test.title.replace(/[^\w\s\-а-яёА-ЯЁ]/g, '').trim() || 'test'}.txt`;
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`);
+  res.send(content);
+});
+
 // POST /api/tests/:id/results — save result
 router.post('/:id/results', optionalAuth, (req, res) => {
   const { score, total, time_spent, answers, mode } = req.body;

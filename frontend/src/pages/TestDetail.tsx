@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   FileQuestion, Building2, Clock, Lock, Globe, User, Edit, Trash2,
-  PlayCircle, GraduationCap, AlertCircle, Zap
+  PlayCircle, GraduationCap, AlertCircle, Zap, Download
 } from 'lucide-react';
 import api from '../api/client';
 import type { Test, Question, PendingQuestion } from '../types';
@@ -132,6 +132,18 @@ export default function TestDetail() {
               В тесте нет вопросов. Добавьте их в редакторе.
             </p>
           )}
+          {/* Download button — visible to everyone with access */}
+          {canTake && (
+            <a
+              href={`/api/tests/${id}/export`}
+              download
+              className="btn-secondary justify-center sm:justify-start"
+            >
+              <Download size={16} />
+              Скачать базу
+            </a>
+          )}
+
           {isOwner && (
             <div className="flex gap-3 sm:contents">
               <Link to={`/tests/${id}/edit`} className="btn-secondary flex-1 justify-center sm:flex-none">
