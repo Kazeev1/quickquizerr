@@ -22,7 +22,8 @@ export default function TakeTest() {
   const { id } = useParams<{ id: string }>();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const mode = params.get('mode') === 'exam' ? 'exam' : 'normal';
+  const rawMode = params.get('mode');
+  const mode = rawMode === 'exam' ? 'exam' : rawMode === 'sprint' ? 'sprint' : 'normal';
 
   const [test, setTest] = useState<Test | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -50,7 +51,7 @@ export default function TakeTest() {
         const { data } = await api.get(`/tests/${id}`);
         setTest(data.test);
         let qs: Question[] = shuffle(data.questions);
-        if (mode === 'exam') qs = qs.slice(0, 30);
+        if (mode === 'exam' || mode === 'sprint') qs = qs.slice(0, 30);
         qs = qs.map((q) => {
           const indices = shuffle(q.options.map((_, i) => i));
           return {
@@ -72,7 +73,7 @@ export default function TakeTest() {
   const q = questions[current];
   const isMultiple = test?.question_type === 'multiple';
   const selected = answers[current] || [];
-  const isConfirmed = mode === 'normal' ? !!confirmed[current] : false;
+  const isConfirmed = mode !== 'exam' ? !!confirmed[current] : false;
 
   // Toggle answer selection (locked after confirming in normal mode)
   const toggle = (oi: number) => {
@@ -84,7 +85,7 @@ export default function TakeTest() {
       }
       // Single: auto-confirm on click
       const next = { ...a, [current]: [oi] };
-      if (mode === 'normal') {
+      if (mode !== 'exam') {
         setConfirmed((c) => ({ ...c, [current]: true }));
       }
       return next;
@@ -166,7 +167,7 @@ export default function TakeTest() {
         <div>
           <h1 className="font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[180px] sm:max-w-xs">{test.title}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {mode === 'exam' ? 'Режим экзамена' : 'Обучение'} · {questions.length} вопросов
+            {mode === 'exam' ? 'Режим экзамена' : mode === 'sprint' ? 'Быстрый тест' : 'Обучение'} · {questions.length} вопросов
           </p>
         </div>
         <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1.5 text-sm font-mono font-medium text-gray-700 dark:text-gray-300">
@@ -284,8 +285,8 @@ export default function TakeTest() {
           </div>
         )}
 
-        {/* Confirm button for multiple-choice normal mode */}
-        {mode === 'normal' && isMultiple && !isConfirmed && selected.length > 0 && (
+        {/* Confirm button for multiple-choice (normal + sprint modes) */}
+        {mode !== 'exam' && isMultiple && !isConfirmed && selected.length > 0 && (
           <div className="mt-4 ml-0 sm:ml-11">
             <button onClick={confirmMultiple} className="btn-primary btn-sm">
               Подтвердить ответ
@@ -305,7 +306,7 @@ export default function TakeTest() {
         </div>
 
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {mode === 'normal'
+          {mode !== 'exam'
             ? `${Object.keys(confirmed).length} / ${questions.length}`
             : `Отвечено: ${answeredCount} / ${questions.length}`
           }

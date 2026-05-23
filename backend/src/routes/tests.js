@@ -504,8 +504,8 @@ router.get('/:id/token-usage', authenticateToken, (req, res) => {
   }
 
   const total_tokens = prompt_tokens + completion_tokens;
-  // gpt-4.1-nano: $0.10/1M input, $0.40/1M output (x100 display multiplier)
-  const cost_usd = (prompt_tokens * 0.10 + completion_tokens * 0.40) / 1_000_000 * 100;
+  // gpt-4.1-nano: $0.10/1M input, $0.40/1M output
+  const cost_usd = (prompt_tokens * 0.10 + completion_tokens * 0.40) / 1_000_000;
   const cost_kzt = cost_usd * 500;
 
   res.json({ has_logs: true, prompt_tokens, completion_tokens, total_tokens, cost_usd, cost_kzt });

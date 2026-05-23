@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   FileQuestion, Building2, Clock, Lock, Globe, User, Edit, Trash2,
-  PlayCircle, GraduationCap, AlertCircle
+  PlayCircle, GraduationCap, AlertCircle, Zap
 } from 'lucide-react';
 import api from '../api/client';
 import type { Test, Question, PendingQuestion } from '../types';
@@ -113,6 +113,12 @@ export default function TestDetail() {
                 <PlayCircle size={18} />
                 Пройти тест
               </Link>
+              {questions.length >= 30 && (
+                <Link to={`/tests/${id}/take?mode=sprint`} className="btn-secondary justify-center sm:justify-start">
+                  <Zap size={18} />
+                  Быстрый тест (30 вопросов)
+                </Link>
+              )}
               {questions.length >= 30 && (
                 <Link to={`/tests/${id}/take?mode=exam`} className="btn-secondary justify-center sm:justify-start">
                   <GraduationCap size={18} />
