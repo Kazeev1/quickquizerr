@@ -1,11 +1,12 @@
 import { useState, useRef, DragEvent, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Upload, FileText, Plus, Trash2, AlertTriangle, CheckCircle,
-  Loader2, ChevronDown, ChevronUp, X
+  Loader2, ChevronDown, ChevronUp, X, Lock
 } from 'lucide-react';
 import api from '../api/client';
 import type { UploadResponse } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface QuestionForm {
   text: string;
@@ -23,9 +24,44 @@ type Step = 'meta' | 'method' | 'upload' | 'manual' | 'uploading' | 'image_warni
 
 export default function CreateTest() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<Step>('meta');
+
+  // Auth wall for unauthenticated users
+  if (!user) {
+    return (
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="card p-8">
+            <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 rounded-full flex items-center justify-center mx-auto mb-5">
+              <Lock size={32} className="text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Только для зарегистрированных
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
+              Создавать тесты с помощью ИИ могут только зарегистрированные пользователи.
+              Регистрация бесплатна и занимает меньше минуты.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/register" className="btn-primary flex-1 justify-center">
+                Зарегистрироваться
+              </Link>
+              <Link to="/login" className="btn-secondary flex-1 justify-center">
+                Войти
+              </Link>
+            </div>
+          </div>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mt-4">
+            Хотите сначала посмотреть?{' '}
+            <Link to="/" className="text-indigo-600 hover:underline">Открыть каталог тестов</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
   const [meta, setMeta] = useState({ title: '', university: '', access_type: 'public', question_type: 'single' });
   const [docMode, setDocMode] = useState<'with_answers' | 'without_answers'>('with_answers');
   const [file, setFile] = useState<File | null>(null);

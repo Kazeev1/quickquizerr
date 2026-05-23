@@ -62,6 +62,8 @@ const ACTION_STYLES: Record<string, string> = {
   login_blocked:    'bg-rose-200 text-rose-800',
   anon_take_test:   'bg-orange-100 text-orange-700',
   anon_export:      'bg-amber-100 text-amber-700',
+  explain_ai:       'bg-violet-100 text-violet-700',
+  anon_explain_ai:  'bg-orange-100 text-orange-700',
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -75,6 +77,8 @@ const ACTION_LABELS: Record<string, string> = {
   login_blocked:    'Вход заблокирован',
   anon_take_test:   'Прошёл тест (аноним)',
   anon_export:      'Скачал базу (аноним)',
+  explain_ai:       'Объяснение ИИ',
+  anon_explain_ai:  'Объяснение ИИ (аноним)',
 };
 
 function ActionBadge({ action }: { action: string }) {

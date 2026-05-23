@@ -56,8 +56,12 @@ export default function Header() {
             </>
           ) : (
             <>
+              <Link to="/create" className="btn-primary btn-sm">
+                <Plus size={16} />
+                Создать тест
+              </Link>
               <Link to="/login" className="btn-secondary btn-sm">Войти</Link>
-              <Link to="/register" className="btn-primary btn-sm">Регистрация</Link>
+              <Link to="/register" className="btn-secondary btn-sm">Регистрация</Link>
             </>
           )}
           <button
@@ -129,6 +133,13 @@ export default function Header() {
           ) : (
             <>
               <Link
+                to="/create"
+                onClick={close}
+                className="flex items-center gap-2 w-full px-3 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              >
+                <Plus size={16} /> Создать тест
+              </Link>
+              <Link
                 to="/login"
                 onClick={close}
                 className="flex items-center justify-center w-full px-3 py-3 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
@@ -138,7 +149,7 @@ export default function Header() {
               <Link
                 to="/register"
                 onClick={close}
-                className="flex items-center justify-center w-full px-3 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                className="flex items-center justify-center w-full px-3 py-3 rounded-lg text-sm font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Регистрация
               </Link>
