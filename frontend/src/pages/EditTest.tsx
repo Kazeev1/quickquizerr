@@ -116,9 +116,9 @@ export default function EditTest() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Редактирование теста</h1>
-        <Link to={`/tests/${id}`} className="btn-secondary btn-sm">← К тесту</Link>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Редактирование теста</h1>
+        <Link to={`/tests/${id}`} className="btn-secondary btn-sm shrink-0">← К тесту</Link>
       </div>
 
       {/* Meta */}
@@ -166,7 +166,7 @@ export default function EditTest() {
           <h2 className="font-semibold text-violet-800 mb-3">Использование ИИ (gpt-4.1-nano)</h2>
           {tokenUsage.total_tokens > 0 ? (
             <>
-              <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 <div className="bg-white rounded-lg p-3 text-center border border-violet-100">
                   <p className="text-xs text-gray-500 mb-1">Входящие токены</p>
                   <p className="font-bold text-gray-800">{tokenUsage.prompt_tokens.toLocaleString()}</p>
@@ -180,7 +180,7 @@ export default function EditTest() {
                   <p className="font-bold text-violet-700">{tokenUsage.total_tokens.toLocaleString()}</p>
                 </div>
               </div>
-              <div className="bg-white rounded-lg px-4 py-2 border border-violet-100 text-sm inline-flex gap-1">
+              <div className="bg-white rounded-lg px-4 py-2 border border-violet-100 text-sm flex flex-wrap gap-1">
                 <span className="text-gray-500">Стоимость:</span>
                 <span className="font-semibold text-gray-800">${tokenUsage.cost_usd.toFixed(6)}</span>
                 <span className="text-gray-400">·</span>

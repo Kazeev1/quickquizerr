@@ -72,11 +72,11 @@ export default function Home() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[140px]">
             <SlidersHorizontal size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <select
-              className="input pl-9 pr-4 appearance-none min-w-[160px]"
+              className="input pl-9 pr-4 appearance-none"
               value={university}
               onChange={(e) => setUniversity(e.target.value)}
             >
@@ -87,7 +87,7 @@ export default function Home() {
             </select>
           </div>
           <select
-            className="input min-w-[140px]"
+            className="input flex-1 min-w-[130px]"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
           >

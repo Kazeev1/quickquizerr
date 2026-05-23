@@ -179,7 +179,7 @@ export default function CreateTest() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Университет</label>
               <input className="input" value={meta.university} onChange={setMetaField('university')} placeholder="Необязательно" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Доступ</label>
                 <select className="input" value={meta.access_type} onChange={setMetaField('access_type')}>

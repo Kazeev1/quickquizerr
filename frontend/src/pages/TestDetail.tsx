@@ -77,8 +77,8 @@ export default function TestDetail() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="card p-6 mb-6">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{test.title}</h1>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{test.title}</h1>
           <span className={`badge shrink-0 ${test.access_type === 'private' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
             {test.access_type === 'private' ? <><Lock size={10} className="mr-1" />Приватный</> : <><Globe size={10} className="mr-1" />Публичный</>}
           </span>
@@ -106,15 +106,15 @@ export default function TestDetail() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
           {canTake ? (
             <>
-              <Link to={`/tests/${id}/take?mode=normal`} className="btn-primary">
+              <Link to={`/tests/${id}/take?mode=normal`} className="btn-primary justify-center sm:justify-start">
                 <PlayCircle size={18} />
                 Пройти тест
               </Link>
               {questions.length >= 30 && (
-                <Link to={`/tests/${id}/take?mode=exam`} className="btn-secondary">
+                <Link to={`/tests/${id}/take?mode=exam`} className="btn-secondary justify-center sm:justify-start">
                   <GraduationCap size={18} />
                   Режим экзамена (30 вопросов)
                 </Link>
@@ -127,16 +127,16 @@ export default function TestDetail() {
             </p>
           )}
           {isOwner && (
-            <>
-              <Link to={`/tests/${id}/edit`} className="btn-secondary">
+            <div className="flex gap-3 sm:contents">
+              <Link to={`/tests/${id}/edit`} className="btn-secondary flex-1 justify-center sm:flex-none">
                 <Edit size={16} />
                 Редактировать
               </Link>
-              <button onClick={() => setDeleteModal(true)} className="btn-danger btn-sm">
+              <button onClick={() => setDeleteModal(true)} className="btn-danger btn-sm flex-1 justify-center sm:flex-none">
                 <Trash2 size={16} />
                 Удалить
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

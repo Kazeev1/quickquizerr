@@ -160,11 +160,11 @@ export default function TakeTest() {
   const currentIsCorrect = isConfirmed && isAnswerCorrect(selected, q.correct_answers);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-5 sm:py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="font-semibold text-gray-900 dark:text-gray-100 truncate max-w-xs">{test.title}</h1>
+          <h1 className="font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[180px] sm:max-w-xs">{test.title}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {mode === 'exam' ? 'Режим экзамена' : 'Обучение'} · {questions.length} вопросов
           </p>
@@ -181,7 +181,7 @@ export default function TakeTest() {
       </div>
 
       {/* Question card */}
-      <div className={`card p-6 mb-4 transition-colors duration-300 ${
+      <div className={`card p-4 sm:p-6 mb-4 transition-colors duration-300 ${
         isConfirmed
           ? currentIsCorrect
             ? 'ring-2 ring-green-400'
@@ -195,11 +195,11 @@ export default function TakeTest() {
           <p className="text-gray-900 dark:text-gray-100 font-medium leading-relaxed">{q.text}</p>
         </div>
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3 pl-11">
+        <p className="text-xs text-gray-500 dark:text-gray-300 mb-3 pl-0 sm:pl-11">
           {isMultiple ? 'Выберите все правильные ответы' : 'Выберите один правильный ответ'}
         </p>
 
-        <div className="space-y-2 pl-11">
+        <div className="space-y-2 pl-0 sm:pl-11">
           {q.options.map((opt, oi) => {
             const isSel = selected.includes(oi);
             const isCorrectOpt = q.correct_answers.includes(oi);
@@ -216,7 +216,7 @@ export default function TakeTest() {
                 optClass = 'border-red-400 bg-red-50 text-red-900 dark:bg-red-900/30 dark:text-red-300 dark:border-red-600 cursor-default';
                 icon = <XCircle size={16} className="text-red-400 shrink-0" />;
               } else {
-                optClass = 'border-gray-100 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-default';
+                optClass = 'border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-300 cursor-default';
               }
             } else if (isSel) {
               optClass = 'border-indigo-500 bg-indigo-50 text-indigo-900 dark:bg-indigo-900/40 dark:text-indigo-200 cursor-pointer';
@@ -249,7 +249,7 @@ export default function TakeTest() {
 
         {/* Feedback banner (normal mode) */}
         {isConfirmed && (
-          <div className={`mt-4 ml-11 flex items-center gap-2 text-sm font-medium rounded-lg px-4 py-2.5 ${
+          <div className={`mt-4 ml-0 sm:ml-11 flex items-center gap-2 text-sm font-medium rounded-lg px-4 py-2.5 ${
             currentIsCorrect ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
           }`}>
             {currentIsCorrect
@@ -261,7 +261,7 @@ export default function TakeTest() {
 
         {/* AI Explanation (normal mode, after confirming) */}
         {isConfirmed && (
-          <div className="mt-3 ml-11">
+          <div className="mt-3 ml-0 sm:ml-11">
             {!explanations[current] ? (
               <button
                 onClick={() => fetchExplanation(current)}
@@ -286,7 +286,7 @@ export default function TakeTest() {
 
         {/* Confirm button for multiple-choice normal mode */}
         {mode === 'normal' && isMultiple && !isConfirmed && selected.length > 0 && (
-          <div className="mt-4 ml-11">
+          <div className="mt-4 ml-0 sm:ml-11">
             <button onClick={confirmMultiple} className="btn-primary btn-sm">
               Подтвердить ответ
             </button>
@@ -319,7 +319,7 @@ export default function TakeTest() {
               <ChevronRight size={16} />
             </button>
           ) : (
-            <span className="text-xs text-gray-400 dark:text-gray-500 italic">Выберите ответ</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300 italic">Выберите ответ</span>
           )
         ) : (
           (mode === 'exam' || isConfirmed) ? (
@@ -331,7 +331,7 @@ export default function TakeTest() {
               {submitting ? 'Сохранение...' : 'Завершить тест'}
             </button>
           ) : (
-            <span className="text-xs text-gray-400 dark:text-gray-500 italic">Выберите ответ</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300 italic">Выберите ответ</span>
           )
         )}
       </div>

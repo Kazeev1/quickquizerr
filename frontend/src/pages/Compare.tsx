@@ -137,7 +137,7 @@ export default function Compare() {
 
       {/* Drop zone */}
       <div
-        className="border-2 border-dashed border-indigo-300 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors mb-4"
+        className="border-2 border-dashed border-indigo-300 rounded-xl p-6 sm:p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors mb-4"
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
         onClick={() => fileInputRef.current?.click()}
@@ -195,7 +195,7 @@ export default function Compare() {
       {result && (
         <div className="space-y-4">
           {/* Summary cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <div className="card p-4 text-center">
               <p className="text-2xl font-bold text-gray-800">{result.total_count}</p>
               <p className="text-xs text-gray-500 mt-1">Всего вопросов</p>

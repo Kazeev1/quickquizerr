@@ -31,7 +31,9 @@ export default function Admin() {
             key={key}
             onClick={() => setTab(key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === key ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+              tab === key
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             <Icon size={15} />
@@ -135,28 +137,28 @@ function UsersTab() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h2 className="font-semibold">Пользователи ({total})</h2>
-        <input className="input max-w-xs" placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="input sm:max-w-xs" placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       {loading ? <LoadingSpinner /> : (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+        <div className="card overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[540px]">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Пользователь</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Дата</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Статус</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Пользователь</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Email</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Дата</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Статус</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
-                <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{u.username}</td>
-                  <td className="px-4 py-3 text-gray-500">{u.email}</td>
-                  <td className="px-4 py-3 text-gray-400">{new Date(u.created_at).toLocaleDateString('ru-RU')}</td>
+                <tr key={u.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <td className="px-4 py-3 font-medium dark:text-gray-200">{u.username}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{u.email}</td>
+                  <td className="px-4 py-3 text-gray-400 dark:text-gray-500">{new Date(u.created_at).toLocaleDateString('ru-RU')}</td>
                   <td className="px-4 py-3">
                     <span className={`badge ${u.is_blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                       {u.is_blocked ? 'Заблокирован' : 'Активен'}
@@ -212,31 +214,31 @@ function TestsTab() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h2 className="font-semibold">Тесты ({total})</h2>
-        <input className="input max-w-xs" placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="input sm:max-w-xs" placeholder="Поиск..." value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
       {loading ? <LoadingSpinner /> : (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+        <div className="card overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[500px]">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Название</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Автор</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Вопросов</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Статус</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Название</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Автор</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Вопросов</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Статус</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {tests.map((t) => (
-                <tr key={t.id} className="border-b last:border-0 hover:bg-gray-50">
+                <tr key={t.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td className="px-4 py-3">
                     <Link to={`/tests/${t.id}`} className="font-medium text-indigo-600 hover:underline">{t.title}</Link>
-                    {t.university && <p className="text-xs text-gray-400">{t.university}</p>}
+                    {t.university && <p className="text-xs text-gray-400 dark:text-gray-500">{t.university}</p>}
                   </td>
-                  <td className="px-4 py-3 text-gray-500">{t.author_name}</td>
-                  <td className="px-4 py-3 text-gray-500">{t.question_count}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{t.author_name}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{t.question_count}</td>
                   <td className="px-4 py-3">
                     <span className={`badge ${t.is_blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                       {t.is_blocked ? 'Заблокирован' : 'Активен'}
@@ -364,27 +366,27 @@ function UserLogsTab() {
   return (
     <div>
       <h2 className="font-semibold mb-4">Журнал действий ({logs.length})</h2>
-      <div className="card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
+      <div className="card overflow-hidden overflow-x-auto">
+        <table className="w-full text-sm min-w-[460px]">
+          <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Пользователь</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Действие</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">IP</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Дата</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Пользователь</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Действие</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">IP</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Дата</th>
             </tr>
           </thead>
           <tbody>
             {logs.map((log) => (
-              <tr key={log.id} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-4 py-2">{log.username || `#${log.user_id}`}</td>
+              <tr key={log.id} className="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <td className="px-4 py-2 dark:text-gray-300">{log.username || `#${log.user_id}`}</td>
                 <td className="px-4 py-2">
                   <span className={`badge ${actionColor[log.action] || 'bg-gray-100 text-gray-700'}`}>
                     {log.action}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-gray-400 font-mono text-xs">{log.ip || '—'}</td>
-                <td className="px-4 py-2 text-gray-400 text-xs">{new Date(log.created_at).toLocaleString('ru-RU')}</td>
+                <td className="px-4 py-2 text-gray-400 dark:text-gray-500 font-mono text-xs">{log.ip || '—'}</td>
+                <td className="px-4 py-2 text-gray-400 dark:text-gray-500 text-xs">{new Date(log.created_at).toLocaleString('ru-RU')}</td>
               </tr>
             ))}
           </tbody>

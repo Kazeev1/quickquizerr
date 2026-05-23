@@ -80,7 +80,7 @@ export default function Results() {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <Link to="/" className="btn-secondary flex-1 justify-center">
           <Home size={16} />
           На главную
