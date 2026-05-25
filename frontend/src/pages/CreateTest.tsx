@@ -2,7 +2,7 @@ import { useState, useRef, DragEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Upload, FileText, Plus, Trash2, AlertTriangle, CheckCircle,
-  Loader2, ChevronDown, ChevronUp, X, Lock, Mail, RefreshCw
+  Loader2, ChevronDown, ChevronUp, X, Lock
 } from 'lucide-react';
 import api from '../api/client';
 import type { UploadResponse } from '../types';
@@ -28,8 +28,6 @@ export default function CreateTest() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<Step>('meta');
-  const [resending, setResending] = useState(false);
-  const [resendDone, setResendDone] = useState(false);
 
   // Auth wall
   if (!user) {
@@ -61,44 +59,6 @@ export default function CreateTest() {
     );
   }
 
-  // Email verification wall
-  if (!user.email_verified) {
-    const handleResend = async () => {
-      setResending(true);
-      try {
-        await api.post('/auth/resend-verification');
-        setResendDone(true);
-      } catch { /* ignore */ } finally {
-        setResending(false);
-      }
-    };
-    return (
-      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4">
-        <div className="card p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center mx-auto mb-5">
-            <Mail size={32} className="text-amber-600 dark:text-amber-400" />
-          </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Подтвердите email
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-1 leading-relaxed">
-            Для создания тестов необходимо подтвердить адрес электронной почты.
-          </p>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-            Письмо отправлено на <strong>{user.email}</strong>
-          </p>
-          {!resendDone ? (
-            <button onClick={handleResend} disabled={resending} className="btn-secondary w-full justify-center mb-3">
-              {resending ? <><Loader2 size={16} className="animate-spin" /> Отправляем...</> : <><RefreshCw size={16} /> Отправить повторно</>}
-            </button>
-          ) : (
-            <p className="text-green-600 text-sm font-medium mb-3">Письмо отправлено! Проверьте папку «Спам».</p>
-          )}
-          <Link to="/" className="block text-sm text-indigo-500 hover:underline">Вернуться на главную</Link>
-        </div>
-      </div>
-    );
-  }
   const [meta, setMeta] = useState({ title: '', university: '', access_type: 'public', question_type: 'single' });
   const [docMode, setDocMode] = useState<'with_answers' | 'without_answers'>('with_answers');
   const [file, setFile] = useState<File | null>(null);

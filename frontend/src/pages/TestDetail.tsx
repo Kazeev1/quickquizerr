@@ -2,13 +2,41 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   FileQuestion, Building2, Clock, Lock, Globe, User, Edit, Trash2,
-  PlayCircle, GraduationCap, AlertCircle, Zap, Download
+  PlayCircle, GraduationCap, AlertCircle, Zap, Download, TrendingUp
 } from 'lucide-react';
 import api from '../api/client';
 import type { Test, Question, PendingQuestion } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from '../components/Modal';
+
+interface QuestionStat {
+  correct_streak: number;
+  wrong_streak: number;
+  total_answers: number;
+  last_correct: number | null;
+}
+
+function calcWeight(stat: QuestionStat | undefined): number {
+  if (!stat || stat.total_answers === 0) return 15;
+  if (stat.last_correct === 0) return 20;
+  if (stat.correct_streak >= 3) return 2.5;
+  return 10;
+}
+
+function WeightBadge({ weight }: { weight: number }) {
+  let cls = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+  let label = `${weight}`;
+  if (weight === 20) { cls = 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'; label = '20'; }
+  else if (weight === 15) { cls = 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'; label = '15'; }
+  else if (weight === 2.5) { cls = 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'; label = '2.5'; }
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded ${cls}`} title="Вес вопроса (вероятность появления в быстром тесте)">
+      <TrendingUp size={10} />
+      {label}
+    </span>
+  );
+}
 
 function formatDate(s: string) {
   return new Date(s).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -26,6 +54,7 @@ export default function TestDetail() {
   const [error, setError] = useState('');
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [questionStats, setQuestionStats] = useState<Record<number, QuestionStat>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +68,13 @@ export default function TestDetail() {
             const p = await api.get(`/tests/${id}/pending`);
             setPending(p.data.pending);
           } catch { /* no pending */ }
+        }
+
+        if (user) {
+          try {
+            const s = await api.get(`/tests/${id}/question-stats`);
+            setQuestionStats(s.data.stats || {});
+          } catch { /* stats unavailable */ }
         }
       } catch (err: any) {
         setError(err.response?.data?.error || 'Тест не найден');
@@ -181,15 +217,27 @@ export default function TestDetail() {
       {/* Question list preview */}
       {questions.length > 0 && (
         <div className="card p-6">
-          <h2 className="font-semibold text-lg mb-4">Вопросы ({questions.length})</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-lg">Вопросы ({questions.length})</h2>
+            {user && Object.keys(questionStats).length > 0 && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                <TrendingUp size={12} />
+                Сортировка по весу
+              </span>
+            )}
+          </div>
           <div className="space-y-3">
-            {questions.slice(0, 5).map((q, i) => (
-              <div key={q.id} className="flex gap-3 text-sm">
-                <span className="num-badge">{i + 1}</span>
-                <p className="text-gray-700 dark:text-gray-300 line-clamp-2">{q.text}</p>
+            {(user && Object.keys(questionStats).length > 0
+              ? [...questions].sort((a, b) => calcWeight(questionStats[b.id]) - calcWeight(questionStats[a.id]))
+              : questions.slice(0, 5)
+            ).map((q, i) => (
+              <div key={q.id} className="flex gap-3 text-sm items-start">
+                <span className="num-badge shrink-0">{i + 1}</span>
+                <p className="text-gray-700 dark:text-gray-300 line-clamp-2 flex-1">{q.text}</p>
+                {user && Object.keys(questionStats).length > 0 && <WeightBadge weight={calcWeight(questionStats[q.id])} />}
               </div>
             ))}
-            {questions.length > 5 && (
+            {(!user || Object.keys(questionStats).length === 0) && questions.length > 5 && (
               <p className="text-sm text-gray-400 dark:text-gray-500 pl-9">... и ещё {questions.length - 5} вопросов</p>
             )}
           </div>
