@@ -42,6 +42,8 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/compare', compareRoutes);
 app.use('/api/patch-notes', patchNotesRoutes);
 
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+
 // Serve frontend static files (production)
 const frontendDist = path.join(__dirname, '../../frontend/dist');
 if (fs.existsSync(frontendDist)) {

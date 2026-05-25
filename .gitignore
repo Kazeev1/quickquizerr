@@ -3,3 +3,4 @@ backend/data/
 .env
 frontend/.env
 .claude/
+frontend/dist/
