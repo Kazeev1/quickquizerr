@@ -13,6 +13,7 @@ import Results from './pages/Results';
 import EditTest from './pages/EditTest';
 import Admin from './pages/Admin';
 import Compare from './pages/Compare';
+import VerifyEmail from './pages/VerifyEmail';
 import NotFound from './pages/NotFound';
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
@@ -37,7 +38,8 @@ function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/tests/:id" element={<TestDetail />} />
-          <Route path="/tests/:id/take" element={<TakeTest />} />
+          <Route path="/tests/:id/take" element={<PrivateRoute><TakeTest /></PrivateRoute>} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/tests/:id/results/:resultId" element={<Results />} />
           <Route
             path="/create"

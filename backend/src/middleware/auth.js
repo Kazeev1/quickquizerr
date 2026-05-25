@@ -15,7 +15,7 @@ function authenticateToken(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const db = getDB();
     const user = db
-      .prepare('SELECT id, email, username, role, is_blocked FROM users WHERE id = ?')
+      .prepare('SELECT id, email, username, role, is_blocked, email_verified FROM users WHERE id = ?')
       .get(decoded.userId);
 
     if (!user || user.is_blocked) {
@@ -36,6 +36,14 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function requireEmailVerified(req, res, next) {
+  if (req.user.role === 'admin') return next();
+  if (!req.user.email_verified) {
+    return res.status(403).json({ error: 'Требуется подтверждение email', code: 'EMAIL_NOT_VERIFIED' });
+  }
+  next();
+}
+
 function optionalAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -49,7 +57,7 @@ function optionalAuth(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const db = getDB();
     const user = db
-      .prepare('SELECT id, email, username, role, is_blocked FROM users WHERE id = ?')
+      .prepare('SELECT id, email, username, role, is_blocked, email_verified FROM users WHERE id = ?')
       .get(decoded.userId);
     req.user = user && !user.is_blocked ? user : null;
   } catch {
@@ -58,4 +66,4 @@ function optionalAuth(req, res, next) {
   next();
 }
 
-module.exports = { authenticateToken, requireAdmin, optionalAuth, JWT_SECRET };
+module.exports = { authenticateToken, requireAdmin, requireEmailVerified, optionalAuth, JWT_SECRET };

@@ -29,6 +29,9 @@ function initDB() {
       username TEXT NOT NULL,
       role TEXT DEFAULT 'user',
       is_blocked INTEGER DEFAULT 0,
+      email_verified INTEGER DEFAULT 0,
+      email_verify_token TEXT,
+      email_verify_expires DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -120,16 +123,24 @@ function initDB() {
     );
   `);
 
+  // Migrate existing DB: add email verification columns if not present
+  try { db.exec('ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0'); } catch {}
+  try { db.exec('ALTER TABLE users ADD COLUMN email_verify_token TEXT'); } catch {}
+  try { db.exec('ALTER TABLE users ADD COLUMN email_verify_expires DATETIME'); } catch {}
+
+  // Seed admin (email always verified)
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@testpad.com';
   const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
-
   if (!adminExists) {
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
     const hash = bcrypt.hashSync(adminPassword, 10);
     db.prepare(
-      `INSERT INTO users (email, password_hash, username, role) VALUES (?, ?, 'Администратор', 'admin')`
+      `INSERT INTO users (email, password_hash, username, role, email_verified) VALUES (?, ?, 'Администратор', 'admin', 1)`
     ).run(adminEmail, hash);
     console.log(`\n✓ Admin created: ${adminEmail} / ${adminPassword}\n`);
+  } else {
+    // Ensure existing admin is verified
+    db.prepare(`UPDATE users SET email_verified = 1 WHERE email = ? AND role = 'admin'`).run(adminEmail);
   }
 
   console.log('✓ Database initialized');
