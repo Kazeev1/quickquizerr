@@ -15,10 +15,13 @@ interface PatchNote {
   is_visible: number;
 }
 
+const PREVIEW_LENGTH = 200;
+
 function PatchNotesBlock() {
   const [notes, setNotes] = useState<PatchNote[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const limit = 3;
 
   useEffect(() => {
@@ -34,6 +37,14 @@ function PatchNotesBlock() {
 
   const totalPages = Math.ceil(total / limit);
 
+  const toggleExpand = (id: number) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   return (
     <div className="card p-5 mb-8">
       <div className="flex items-center gap-2 mb-4">
@@ -41,19 +52,32 @@ function PatchNotesBlock() {
         <h2 className="font-semibold text-gray-900 dark:text-gray-100">Последние изменения</h2>
       </div>
       <div className="space-y-4">
-        {notes.map((note) => (
-          <div key={note.id} className="border-b dark:border-gray-700 last:border-0 pb-4 last:pb-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">{note.title}</h3>
-              <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
-                {new Date(note.published_at).toLocaleDateString('ru-RU', {
-                  day: 'numeric', month: 'long', year: 'numeric',
-                })}
-              </span>
+        {notes.map((note) => {
+          const isLong = note.body.length > PREVIEW_LENGTH;
+          const isOpen = expanded.has(note.id);
+          const displayBody = isLong && !isOpen ? note.body.slice(0, PREVIEW_LENGTH).trimEnd() + '…' : note.body;
+          return (
+            <div key={note.id} className="border-b dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">{note.title}</h3>
+                <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                  {new Date(note.published_at).toLocaleDateString('ru-RU', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                  })}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{displayBody}</p>
+              {isLong && (
+                <button
+                  onClick={() => toggleExpand(note.id)}
+                  className="mt-1 text-xs text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
+                >
+                  {isOpen ? 'Свернуть' : 'Подробнее'}
+                </button>
+              )}
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{note.body}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {totalPages > 1 && (
         <div className="flex items-center justify-end gap-2 mt-4">
