@@ -1,22 +1,23 @@
 const { Resend } = require('resend');
 
-const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5173';
-const FROM = process.env.EMAIL_FROM || 'Quizify <onboarding@resend.dev>';
-
 async function sendVerificationEmail(email, token) {
-  const link = `${FRONTEND}/verify-email?token=${token}`;
+  const frontend = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+  const from = process.env.EMAIL_FROM || 'Quizify <onboarding@resend.dev>';
+  const link = `${frontend}/verify-email?token=${token}`;
+
+  console.log(`[EMAIL] Sending to ${email}, link: ${link}`);
 
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.log(`\n[EMAIL] RESEND_API_KEY not set. Verification link for ${email}:\n${link}\n`);
+    console.log(`[EMAIL] RESEND_API_KEY not set. Verification link for ${email}:\n${link}`);
     return;
   }
 
   const resend = new Resend(apiKey);
 
   const { data, error } = await resend.emails.send({
-    from: FROM,
+    from,
     to: email,
     subject: 'Подтвердите ваш email — Quizify',
     text: `Подтвердите email на Quizify\n\nПерейдите по ссылке:\n${link}\n\nСсылка действительна 24 часа.`,
