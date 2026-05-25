@@ -109,16 +109,16 @@ export default function TestDetail() {
         <div className="flex flex-col sm:flex-row flex-wrap gap-3">
           {canTake ? (
             <>
-              <Link to={`/tests/${id}/take?mode=normal`} className="btn-primary justify-center sm:justify-start">
-                <PlayCircle size={18} />
-                Пройти тест
-              </Link>
               {questions.length >= 30 && (
-                <Link to={`/tests/${id}/take?mode=sprint`} className="btn-secondary justify-center sm:justify-start">
+                <Link to={`/tests/${id}/take?mode=sprint`} className="btn-primary justify-center sm:justify-start">
                   <Zap size={18} />
                   Быстрый тест (30 вопросов)
                 </Link>
               )}
+              <Link to={`/tests/${id}/take?mode=normal`} className="btn-secondary justify-center sm:justify-start">
+                <PlayCircle size={18} />
+                Пройти полный тест
+              </Link>
               {questions.length >= 30 && (
                 <Link to={`/tests/${id}/take?mode=exam`} className="btn-secondary justify-center sm:justify-start">
                   <GraduationCap size={18} />

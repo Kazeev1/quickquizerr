@@ -201,7 +201,8 @@ export default function TakeTest() {
       setTranslations((t) => ({ ...t, [idx]: { ...(t[idx] || {}), [lang]: data.translated } }));
       setActiveLang((a) => ({ ...a, [idx]: lang }));
     } catch {
-      // ignore, keep current
+      setTranslations((t) => ({ ...t, [idx]: { ...(t[idx] || {}), [lang]: 'Не удалось выполнить перевод. Попробуйте позже.' } }));
+      setActiveLang((a) => ({ ...a, [idx]: lang }));
     } finally {
       setTransLoading((t) => ({ ...t, [idx]: null }));
     }
@@ -478,7 +479,7 @@ export default function TakeTest() {
                       <button
                         key={lang}
                         onClick={() => fetchTranslation(current, lang)}
-                        disabled={currentTransLoading !== null}
+                        disabled={!!currentTransLoading}
                         className={`text-xs px-2 py-0.5 rounded font-medium transition-colors ${
                           currentActiveLang === lang
                             ? 'bg-indigo-600 text-white'
