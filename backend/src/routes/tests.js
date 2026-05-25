@@ -112,8 +112,8 @@ router.get('/:id', optionalAuth, (req, res) => {
   res.json({ test, questions: parsedQuestions });
 });
 
-// POST /api/tests — create test manually (requires email verification)
-router.post('/', authenticateToken, requireEmailVerified, (req, res) => {
+// POST /api/tests — create test manually
+router.post('/', authenticateToken, (req, res) => {
   const { title, university, access_type, question_type, questions } = req.body;
 
   if (!title || !title.trim()) {
@@ -161,8 +161,8 @@ router.post('/', authenticateToken, requireEmailVerified, (req, res) => {
   res.status(201).json({ id: testId, message: 'Тест создан' });
 });
 
-// POST /api/tests/upload — upload file (requires email verification)
-router.post('/upload', authenticateToken, requireEmailVerified, upload.single('file'), async (req, res) => {
+// POST /api/tests/upload — upload file
+router.post('/upload', authenticateToken, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Файл не загружен' });
   }
