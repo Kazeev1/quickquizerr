@@ -147,19 +147,87 @@ router.get('/ai-logs', (req, res) => {
 
 // GET /api/admin/user-logs
 router.get('/user-logs', (req, res) => {
-  const { page = 1, limit = 50 } = req.query;
+  const { page = 1, limit = 50, user_id, action, date_from, date_to } = req.query;
   const db = getDB();
-  const total = db.prepare('SELECT COUNT(*) as cnt FROM user_logs').get().cnt;
+
+  let where = 'WHERE 1=1';
+  const params = [];
+
+  if (user_id) {
+    where += ' AND ul.user_id = ?';
+    params.push(parseInt(user_id));
+  }
+  if (action) {
+    where += ' AND ul.action = ?';
+    params.push(action);
+  }
+  if (date_from) {
+    where += ' AND ul.created_at >= ?';
+    params.push(date_from);
+  }
+  if (date_to) {
+    where += ' AND ul.created_at <= ?';
+    params.push(date_to + ' 23:59:59');
+  }
+
+  const total = db.prepare(`SELECT COUNT(*) as cnt FROM user_logs ul ${where}`).get(...params).cnt;
   const offset = (parseInt(page) - 1) * parseInt(limit);
   const logs = db
     .prepare(
       `SELECT ul.*, u.username, u.email
        FROM user_logs ul LEFT JOIN users u ON ul.user_id = u.id
-       ORDER BY ul.created_at DESC LIMIT ? OFFSET ?`
+       ${where} ORDER BY ul.created_at DESC LIMIT ? OFFSET ?`
     )
-    .all(parseInt(limit), offset);
+    .all(...params, parseInt(limit), offset);
 
   res.json({ logs, total });
+});
+
+// GET /api/admin/patch-notes
+router.get('/patch-notes', (req, res) => {
+  const db = getDB();
+  const notes = db.prepare('SELECT * FROM patch_notes ORDER BY published_at DESC').all();
+  res.json({ notes });
+});
+
+// POST /api/admin/patch-notes
+router.post('/patch-notes', (req, res) => {
+  const { title, body, is_visible } = req.body;
+  if (!title?.trim() || !body?.trim()) {
+    return res.status(400).json({ error: 'Заголовок и текст обязательны' });
+  }
+
+  const db = getDB();
+  const result = db
+    .prepare('INSERT INTO patch_notes (title, body, is_visible) VALUES (?, ?, ?)')
+    .run(title.trim(), body.trim(), is_visible !== false ? 1 : 0);
+
+  res.status(201).json({ id: result.lastInsertRowid });
+});
+
+// PUT /api/admin/patch-notes/:id
+router.put('/patch-notes/:id', (req, res) => {
+  const { title, body, is_visible } = req.body;
+  const db = getDB();
+
+  const note = db.prepare('SELECT * FROM patch_notes WHERE id = ?').get(req.params.id);
+  if (!note) return res.status(404).json({ error: 'Запись не найдена' });
+
+  db.prepare('UPDATE patch_notes SET title = ?, body = ?, is_visible = ? WHERE id = ?').run(
+    title !== undefined ? title.trim() : note.title,
+    body !== undefined ? body.trim() : note.body,
+    is_visible !== undefined ? (is_visible ? 1 : 0) : note.is_visible,
+    note.id
+  );
+
+  res.json({ message: 'Запись обновлена' });
+});
+
+// DELETE /api/admin/patch-notes/:id
+router.delete('/patch-notes/:id', (req, res) => {
+  const db = getDB();
+  db.prepare('DELETE FROM patch_notes WHERE id = ?').run(req.params.id);
+  res.json({ message: 'Запись удалена' });
 });
 
 // GET /api/admin/pending

@@ -604,6 +604,93 @@ router.get('/:id/export', optionalAuth, (req, res) => {
   res.send(content);
 });
 
+// POST /api/tests/:id/start — log test.start event
+router.post('/:id/start', optionalAuth, (req, res) => {
+  const { mode } = req.body;
+  const db = getDB();
+  const test = db.prepare('SELECT id FROM tests WHERE id = ? AND is_blocked = 0').get(req.params.id);
+  if (!test) return res.status(404).json({ error: 'Тест не найден' });
+
+  db.prepare(
+    `INSERT INTO user_logs (user_id, action, details, ip) VALUES (?, 'test.start', ?, ?)`
+  ).run(
+    req.user ? req.user.id : null,
+    JSON.stringify({ test_id: Number(req.params.id), mode: mode || 'normal' }),
+    req.ip
+  );
+
+  res.json({ ok: true });
+});
+
+// GET /api/tests/:id/question-stats — get question stats for authenticated user
+router.get('/:id/question-stats', authenticateToken, (req, res) => {
+  const db = getDB();
+  const stats = db
+    .prepare(
+      `SELECT qs.question_id, qs.correct_streak, qs.wrong_streak, qs.total_answers, qs.last_correct
+       FROM question_stats qs
+       JOIN questions q ON qs.question_id = q.id
+       WHERE qs.user_id = ? AND q.test_id = ?`
+    )
+    .all(req.user.id, req.params.id);
+
+  const statsMap = {};
+  for (const s of stats) {
+    statsMap[s.question_id] = s;
+  }
+
+  res.json({ stats: statsMap });
+});
+
+// POST /api/tests/:id/question-stats/batch — update stats for multiple questions
+router.post('/:id/question-stats/batch', authenticateToken, (req, res) => {
+  const { updates } = req.body;
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return res.status(400).json({ error: 'Неверные данные' });
+  }
+
+  const db = getDB();
+
+  for (const { question_id, is_correct } of updates) {
+    if (!question_id || typeof is_correct !== 'boolean') continue;
+
+    const existing = db
+      .prepare('SELECT * FROM question_stats WHERE user_id = ? AND question_id = ?')
+      .get(req.user.id, question_id);
+
+    if (existing) {
+      if (is_correct) {
+        db.prepare(
+          `UPDATE question_stats
+           SET correct_streak = correct_streak + 1, wrong_streak = 0,
+               total_answers = total_answers + 1, last_correct = 1
+           WHERE user_id = ? AND question_id = ?`
+        ).run(req.user.id, question_id);
+      } else {
+        db.prepare(
+          `UPDATE question_stats
+           SET wrong_streak = wrong_streak + 1, correct_streak = 0,
+               total_answers = total_answers + 1, last_correct = 0
+           WHERE user_id = ? AND question_id = ?`
+        ).run(req.user.id, question_id);
+      }
+    } else {
+      db.prepare(
+        `INSERT INTO question_stats (user_id, question_id, correct_streak, wrong_streak, total_answers, last_correct)
+         VALUES (?, ?, ?, ?, 1, ?)`
+      ).run(
+        req.user.id,
+        question_id,
+        is_correct ? 1 : 0,
+        is_correct ? 0 : 1,
+        is_correct ? 1 : 0
+      );
+    }
+  }
+
+  res.json({ message: 'Статистика обновлена' });
+});
+
 // POST /api/tests/:id/results — save result
 router.post('/:id/results', optionalAuth, (req, res) => {
   const { score, total, time_spent, answers, mode } = req.body;
@@ -626,15 +713,21 @@ router.post('/:id/results', optionalAuth, (req, res) => {
       mode || 'normal'
     );
 
-  // Log anonymous test completion
-  if (!req.user) {
-    db.prepare(
-      `INSERT INTO user_logs (user_id, action, details, ip) VALUES (NULL, 'anon_take_test', ?, ?)`
-    ).run(
-      JSON.stringify({ test_id: test.id, score: score || 0, total: total || 0, mode: mode || 'normal' }),
-      req.ip
-    );
-  }
+  const logDetails = JSON.stringify({
+    test_id: test.id,
+    score: score || 0,
+    total: total || 0,
+    mode: mode || 'normal',
+  });
+
+  db.prepare(
+    `INSERT INTO user_logs (user_id, action, details, ip) VALUES (?, ?, ?, ?)`
+  ).run(
+    req.user ? req.user.id : null,
+    req.user ? 'test.finish' : 'anon_take_test',
+    logDetails,
+    req.ip
+  );
 
   res.status(201).json({ id: result.lastInsertRowid });
 });

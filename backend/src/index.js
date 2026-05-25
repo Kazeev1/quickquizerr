@@ -11,6 +11,7 @@ const testRoutes = require('./routes/tests');
 const adminRoutes = require('./routes/admin');
 const aiRoutes = require('./routes/ai');
 const compareRoutes = require('./routes/compare');
+const patchNotesRoutes = require('./routes/patchNotes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -39,6 +40,7 @@ app.use('/api/tests', testRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/compare', compareRoutes);
+app.use('/api/patch-notes', patchNotesRoutes);
 
 // Serve frontend static files (production)
 const frontendDist = path.join(__dirname, '../../frontend/dist');
