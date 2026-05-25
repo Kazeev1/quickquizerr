@@ -97,6 +97,27 @@ function initDB() {
       ip TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS question_stats (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      question_id INTEGER NOT NULL,
+      correct_streak INTEGER DEFAULT 0,
+      wrong_streak INTEGER DEFAULT 0,
+      total_answers INTEGER DEFAULT 0,
+      last_correct INTEGER DEFAULT 0,
+      UNIQUE(user_id, question_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS patch_notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      published_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      is_visible INTEGER DEFAULT 1
+    );
   `);
 
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@testpad.com';

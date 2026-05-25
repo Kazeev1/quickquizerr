@@ -229,6 +229,54 @@ async function explainQuestion(text, options, correctAnswers) {
   return response.choices[0].message.content.trim();
 }
 
+async function askAboutQuestion(questionText, options, correctAnswers, userQuestion) {
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured');
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const correct = correctAnswers.map((i) => `"${options[i]}"`).join(', ');
+
+  const response = await client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      {
+        role: 'system',
+        content:
+          'You are a helpful teacher answering student questions about test material. Provide clear, concise answers (2-5 sentences). Reply in the same language as the student question.',
+      },
+      {
+        role: 'user',
+        content: `Test question context:\n${questionText}\n\nOptions:\n${options.map((o, i) => `${i + 1}. ${o}`).join('\n')}\nCorrect answer: ${correct}\n\nStudent question: ${userQuestion}`,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 500,
+  });
+
+  return response.choices[0].message.content.trim();
+}
+
+async function translateText(text, targetLang) {
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not configured');
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  const langNames = { RU: 'Russian', KZ: 'Kazakh', EN: 'English' };
+  const targetName = langNames[targetLang] || targetLang;
+
+  const response = await client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      {
+        role: 'system',
+        content: `You are a professional translator. Translate the following text to ${targetName}. Return ONLY the translated text, nothing else.`,
+      },
+      { role: 'user', content: text },
+    ],
+    temperature: 0.3,
+    max_tokens: 600,
+  });
+
+  return response.choices[0].message.content.trim();
+}
+
 async function extractUniqueQuestions(files) {
   function normalizeText(t) {
     return t.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
@@ -266,4 +314,4 @@ async function extractUniqueQuestions(files) {
   };
 }
 
-module.exports = { extractQuestionsFromText, explainQuestion, extractUniqueQuestions, CONFIDENCE_THRESHOLD };
+module.exports = { extractQuestionsFromText, explainQuestion, askAboutQuestion, translateText, extractUniqueQuestions, CONFIDENCE_THRESHOLD };

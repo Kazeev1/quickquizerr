@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users, BookOpen, BarChart3, Shield, Ban, Trash2, RefreshCw,
-  CheckCircle, XCircle, AlertTriangle, Clock, UserX, ShieldAlert
+  CheckCircle, XCircle, AlertTriangle, Clock, UserX, ShieldAlert,
+  Megaphone, Plus, Edit2, Eye, EyeOff,
 } from 'lucide-react';
 import api from '../api/client';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-type Tab = 'stats' | 'users' | 'tests' | 'ai-logs' | 'user-logs';
+type Tab = 'stats' | 'users' | 'tests' | 'ai-logs' | 'user-logs' | 'patch-notes';
 
 export default function Admin() {
   const [tab, setTab] = useState<Tab>('stats');
@@ -26,6 +27,7 @@ export default function Admin() {
           ['tests', 'Тесты', BookOpen],
           ['ai-logs', 'Логи ИИ', AlertTriangle],
           ['user-logs', 'Действия', Clock],
+          ['patch-notes', 'Патч-ноты', Megaphone],
         ] as const).map(([key, label, Icon]) => (
           <button
             key={key}
@@ -47,39 +49,54 @@ export default function Admin() {
       {tab === 'tests' && <TestsTab />}
       {tab === 'ai-logs' && <AILogsTab />}
       {tab === 'user-logs' && <UserLogsTab />}
+      {tab === 'patch-notes' && <PatchNotesTab />}
     </div>
   );
 }
 
 const ACTION_STYLES: Record<string, string> = {
-  login:            'bg-blue-100 text-blue-700',
-  register:         'bg-green-100 text-green-700',
-  create_test:      'bg-indigo-100 text-indigo-700',
-  upload_test:      'bg-purple-100 text-purple-700',
-  admin_block_user: 'bg-red-100 text-red-700',
-  admin_delete_user:'bg-red-100 text-red-700',
-  login_failed:     'bg-rose-100 text-rose-700',
-  login_blocked:    'bg-rose-200 text-rose-800',
-  anon_take_test:   'bg-orange-100 text-orange-700',
-  anon_export:      'bg-amber-100 text-amber-700',
-  explain_ai:       'bg-violet-100 text-violet-700',
-  anon_explain_ai:  'bg-orange-100 text-orange-700',
+  login:              'bg-blue-100 text-blue-700',
+  register:           'bg-green-100 text-green-700',
+  create_test:        'bg-indigo-100 text-indigo-700',
+  upload_test:        'bg-purple-100 text-purple-700',
+  admin_block_user:   'bg-red-100 text-red-700',
+  admin_delete_user:  'bg-red-100 text-red-700',
+  login_failed:       'bg-rose-100 text-rose-700',
+  login_blocked:      'bg-rose-200 text-rose-800',
+  anon_take_test:     'bg-orange-100 text-orange-700',
+  anon_export:        'bg-amber-100 text-amber-700',
+  'explain.request':  'bg-violet-100 text-violet-700',
+  anon_explain_ai:    'bg-orange-100 text-orange-700',
+  'test.start':       'bg-sky-100 text-sky-700',
+  'test.finish':      'bg-teal-100 text-teal-700',
+  'question.ask':     'bg-fuchsia-100 text-fuchsia-700',
+  anon_question_ask:  'bg-orange-100 text-orange-700',
+  'translate.request':'bg-cyan-100 text-cyan-700',
+  anon_translate:     'bg-orange-100 text-orange-700',
 };
 
 const ACTION_LABELS: Record<string, string> = {
-  login:            'Вход',
-  register:         'Регистрация',
-  create_test:      'Создал тест',
-  upload_test:      'Загрузил файл',
-  admin_block_user: 'Заблок. пользователя',
-  admin_delete_user:'Удалил пользователя',
-  login_failed:     'Неудачный вход',
-  login_blocked:    'Вход заблокирован',
-  anon_take_test:   'Прошёл тест (аноним)',
-  anon_export:      'Скачал базу (аноним)',
-  explain_ai:       'Объяснение ИИ',
-  anon_explain_ai:  'Объяснение ИИ (аноним)',
+  login:              'Вход',
+  register:           'Регистрация',
+  create_test:        'Создал тест',
+  upload_test:        'Загрузил файл',
+  admin_block_user:   'Заблок. пользователя',
+  admin_delete_user:  'Удалил пользователя',
+  login_failed:       'Неудачный вход',
+  login_blocked:      'Вход заблокирован',
+  anon_take_test:     'Прошёл тест (аноним)',
+  anon_export:        'Скачал базу (аноним)',
+  'explain.request':  'Объяснение ИИ',
+  anon_explain_ai:    'Объяснение ИИ (аноним)',
+  'test.start':       'Начало теста',
+  'test.finish':      'Завершение теста',
+  'question.ask':     'Задал вопрос ИИ',
+  anon_question_ask:  'Вопрос ИИ (аноним)',
+  'translate.request':'Перевод',
+  anon_translate:     'Перевод (аноним)',
 };
+
+const ALL_ACTIONS = Object.keys(ACTION_LABELS);
 
 function ActionBadge({ action }: { action: string }) {
   const style = ACTION_STYLES[action] || 'bg-gray-100 text-gray-700';
@@ -365,7 +382,6 @@ function AILogsTab() {
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">{log.username} · {log.status}</p>
 
-                {/* Token usage */}
                 {tokens && (
                   <div className="flex gap-3 mt-1.5 flex-wrap">
                     <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
@@ -380,7 +396,6 @@ function AILogsTab() {
                   </div>
                 )}
 
-                {/* Question stats */}
                 {details.total && (
                   <p className="text-xs text-gray-400 mt-1">
                     Извлечено вопросов: {details.total} · подтверждено: {details.confirmed} · на проверку: {details.pending}
@@ -399,51 +414,253 @@ function AILogsTab() {
 
 function UserLogsTab() {
   const [logs, setLogs] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [filterUserId, setFilterUserId] = useState('');
+  const [filterAction, setFilterAction] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
 
-  useEffect(() => {
-    api.get('/admin/user-logs').then(({ data }) => setLogs(data.logs)).finally(() => setLoading(false));
-  }, []);
+  const fetchLogs = async () => {
+    setLoading(true);
+    const params: Record<string, string> = { limit: '100' };
+    if (filterUserId) params.user_id = filterUserId;
+    if (filterAction) params.action = filterAction;
+    if (filterDateFrom) params.date_from = filterDateFrom;
+    if (filterDateTo) params.date_to = filterDateTo;
+    const { data } = await api.get('/admin/user-logs', { params });
+    setLogs(data.logs);
+    setTotal(data.total);
+    setLoading(false);
+  };
 
-  if (loading) return <LoadingSpinner />;
+  useEffect(() => { fetchLogs(); }, [filterUserId, filterAction, filterDateFrom, filterDateTo]);
 
   return (
     <div>
-      <h2 className="font-semibold mb-4">Журнал действий ({logs.length})</h2>
-      <div className="card overflow-hidden overflow-x-auto">
-        <table className="w-full text-sm min-w-[480px]">
-          <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Пользователь</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Действие</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">IP</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Дата</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log) => (
-              <tr
-                key={log.id}
-                className={`border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30 ${
-                  log.user_id == null ? 'bg-orange-50/40 dark:bg-orange-900/10' : ''
-                }`}
-              >
-                <td className="px-4 py-2">
-                  {log.user_id == null
-                    ? <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-medium"><UserX size={13} /> Аноним</span>
-                    : <span className="dark:text-gray-300">{log.username || `#${log.user_id}`}</span>
-                  }
-                </td>
-                <td className="px-4 py-2">
-                  <ActionBadge action={log.action} />
-                </td>
-                <td className="px-4 py-2 text-gray-400 dark:text-gray-500 font-mono text-xs">{log.ip || '—'}</td>
-                <td className="px-4 py-2 text-gray-400 dark:text-gray-500 text-xs">{new Date(log.created_at).toLocaleString('ru-RU')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <input
+          className="input text-sm"
+          placeholder="ID пользователя"
+          value={filterUserId}
+          onChange={(e) => setFilterUserId(e.target.value)}
+        />
+        <select
+          className="input text-sm"
+          value={filterAction}
+          onChange={(e) => setFilterAction(e.target.value)}
+        >
+          <option value="">Все действия</option>
+          {ALL_ACTIONS.map((a) => (
+            <option key={a} value={a}>{ACTION_LABELS[a] || a}</option>
+          ))}
+        </select>
+        <input
+          type="date"
+          className="input text-sm"
+          value={filterDateFrom}
+          onChange={(e) => setFilterDateFrom(e.target.value)}
+          title="Дата с"
+        />
+        <input
+          type="date"
+          className="input text-sm"
+          value={filterDateTo}
+          onChange={(e) => setFilterDateTo(e.target.value)}
+          title="Дата по"
+        />
       </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold">Журнал действий ({total})</h2>
+        <button onClick={fetchLogs} className="btn-secondary btn-sm">
+          <RefreshCw size={13} />
+          Обновить
+        </button>
+      </div>
+
+      {loading ? <LoadingSpinner /> : (
+        <div className="card overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
+            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-700">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Пользователь</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Действие</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">IP</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Дата</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.map((log) => (
+                <tr
+                  key={log.id}
+                  className={`border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30 ${
+                    log.user_id == null ? 'bg-orange-50/40 dark:bg-orange-900/10' : ''
+                  }`}
+                >
+                  <td className="px-4 py-2">
+                    {log.user_id == null
+                      ? <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-medium"><UserX size={13} /> Аноним</span>
+                      : <span className="dark:text-gray-300">{log.username || `#${log.user_id}`}</span>
+                    }
+                  </td>
+                  <td className="px-4 py-2">
+                    <ActionBadge action={log.action} />
+                  </td>
+                  <td className="px-4 py-2 text-gray-400 dark:text-gray-500 font-mono text-xs">{log.ip || '—'}</td>
+                  <td className="px-4 py-2 text-gray-400 dark:text-gray-500 text-xs">{new Date(log.created_at).toLocaleString('ru-RU')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface PatchNote {
+  id: number;
+  title: string;
+  body: string;
+  published_at: string;
+  is_visible: number;
+}
+
+function PatchNotesTab() {
+  const [notes, setNotes] = useState<PatchNote[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<PatchNote | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ title: '', body: '', is_visible: true });
+
+  const fetchNotes = async () => {
+    setLoading(true);
+    const { data } = await api.get('/admin/patch-notes');
+    setNotes(data.notes);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchNotes(); }, []);
+
+  const openCreate = () => {
+    setForm({ title: '', body: '', is_visible: true });
+    setEditing(null);
+    setCreating(true);
+  };
+
+  const openEdit = (note: PatchNote) => {
+    setForm({ title: note.title, body: note.body, is_visible: !!note.is_visible });
+    setEditing(note);
+    setCreating(false);
+  };
+
+  const handleSave = async () => {
+    if (!form.title.trim() || !form.body.trim()) return;
+    if (editing) {
+      await api.put(`/admin/patch-notes/${editing.id}`, form);
+    } else {
+      await api.post('/admin/patch-notes', form);
+    }
+    setEditing(null);
+    setCreating(false);
+    fetchNotes();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Удалить запись?')) return;
+    await api.delete(`/admin/patch-notes/${id}`);
+    fetchNotes();
+  };
+
+  const toggleVisible = async (note: PatchNote) => {
+    await api.put(`/admin/patch-notes/${note.id}`, { is_visible: !note.is_visible });
+    fetchNotes();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-semibold">Патч-ноты ({notes.length})</h2>
+        <button onClick={openCreate} className="btn-primary btn-sm">
+          <Plus size={14} />
+          Добавить
+        </button>
+      </div>
+
+      {(creating || editing) && (
+        <div className="card p-5 mb-4">
+          <h3 className="font-medium mb-3">{editing ? 'Редактировать запись' : 'Новая запись'}</h3>
+          <div className="space-y-3">
+            <input
+              className="input w-full"
+              placeholder="Заголовок"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            />
+            <textarea
+              className="input w-full min-h-[120px] resize-y"
+              placeholder="Текст изменений..."
+              value={form.body}
+              onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+            />
+            <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.is_visible}
+                onChange={(e) => setForm((f) => ({ ...f, is_visible: e.target.checked }))}
+                className="w-4 h-4"
+              />
+              Показывать на главной странице
+            </label>
+            <div className="flex gap-2">
+              <button onClick={handleSave} className="btn-primary btn-sm">Сохранить</button>
+              <button onClick={() => { setEditing(null); setCreating(false); }} className="btn-secondary btn-sm">Отмена</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loading ? <LoadingSpinner /> : (
+        <div className="space-y-3">
+          {notes.length === 0 && (
+            <div className="text-center py-12 text-gray-400">Патч-ноты не найдены</div>
+          )}
+          {notes.map((note) => (
+            <div key={note.id} className={`card p-4 ${!note.is_visible ? 'opacity-60' : ''}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100">{note.title}</h3>
+                    {!note.is_visible && (
+                      <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">скрыто</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">
+                    {new Date(note.published_at).toLocaleString('ru-RU')}
+                  </p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed line-clamp-3">{note.body}</p>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => toggleVisible(note)}
+                    className="btn-secondary btn-sm text-xs"
+                    title={note.is_visible ? 'Скрыть' : 'Показать'}
+                  >
+                    {note.is_visible ? <Eye size={13} /> : <EyeOff size={13} />}
+                  </button>
+                  <button onClick={() => openEdit(note)} className="btn-secondary btn-sm text-xs">
+                    <Edit2 size={13} />
+                  </button>
+                  <button onClick={() => handleDelete(note.id)} className="btn-danger btn-sm text-xs">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

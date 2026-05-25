@@ -1,11 +1,82 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal, Plus, BookOpen } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, BookOpen, Megaphone, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import api from '../api/client';
 import type { Test } from '../types';
 import TestCard from '../components/TestCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
+
+interface PatchNote {
+  id: number;
+  title: string;
+  body: string;
+  published_at: string;
+  is_visible: number;
+}
+
+function PatchNotesBlock() {
+  const [notes, setNotes] = useState<PatchNote[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const limit = 3;
+
+  useEffect(() => {
+    api.get('/patch-notes', { params: { page, limit } })
+      .then(({ data }) => {
+        setNotes(data.notes);
+        setTotal(data.total);
+      })
+      .catch(() => { /* ignore */ });
+  }, [page]);
+
+  if (notes.length === 0) return null;
+
+  const totalPages = Math.ceil(total / limit);
+
+  return (
+    <div className="card p-5 mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Megaphone size={18} className="text-indigo-600" />
+        <h2 className="font-semibold text-gray-900 dark:text-gray-100">Последние изменения</h2>
+      </div>
+      <div className="space-y-4">
+        {notes.map((note) => (
+          <div key={note.id} className="border-b dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">{note.title}</h3>
+              <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                {new Date(note.published_at).toLocaleDateString('ru-RU', {
+                  day: 'numeric', month: 'long', year: 'numeric',
+                })}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{note.body}</p>
+          </div>
+        ))}
+      </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2 mt-4">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 1}
+            className="btn-secondary btn-sm"
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <span className="text-xs text-gray-500">{page} / {totalPages}</span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page === totalPages}
+            className="btn-secondary btn-sm"
+          >
+            <ChevronRightIcon size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Home() {
   const { user } = useAuth();
@@ -48,6 +119,8 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <PatchNotesBlock />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Тесты</h1>
