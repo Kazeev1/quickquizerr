@@ -3,6 +3,7 @@ export interface User {
   email: string;
   username: string;
   role: 'user' | 'admin';
+  email_verified: boolean;
 }
 
 export interface Test {

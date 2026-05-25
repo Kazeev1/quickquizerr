@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { getDB } = require('../db/init');
-const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { authenticateToken, optionalAuth, requireEmailVerified } = require('../middleware/auth');
 const { processFile } = require('../services/fileProcessor');
 const { extractQuestionsFromText } = require('../services/aiService');
 
@@ -112,8 +112,8 @@ router.get('/:id', optionalAuth, (req, res) => {
   res.json({ test, questions: parsedQuestions });
 });
 
-// POST /api/tests — create test manually
-router.post('/', authenticateToken, (req, res) => {
+// POST /api/tests — create test manually (requires email verification)
+router.post('/', authenticateToken, requireEmailVerified, (req, res) => {
   const { title, university, access_type, question_type, questions } = req.body;
 
   if (!title || !title.trim()) {
@@ -161,8 +161,8 @@ router.post('/', authenticateToken, (req, res) => {
   res.status(201).json({ id: testId, message: 'Тест создан' });
 });
 
-// POST /api/tests/upload — upload file, detect images, process with AI
-router.post('/upload', authenticateToken, upload.single('file'), async (req, res) => {
+// POST /api/tests/upload — upload file (requires email verification)
+router.post('/upload', authenticateToken, requireEmailVerified, upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Файл не загружен' });
   }
@@ -604,8 +604,8 @@ router.get('/:id/export', optionalAuth, (req, res) => {
   res.send(content);
 });
 
-// POST /api/tests/:id/start — log test.start event
-router.post('/:id/start', optionalAuth, (req, res) => {
+// POST /api/tests/:id/start — log test.start event (requires auth)
+router.post('/:id/start', authenticateToken, (req, res) => {
   const { mode } = req.body;
   const db = getDB();
   const test = db.prepare('SELECT id FROM tests WHERE id = ? AND is_blocked = 0').get(req.params.id);
@@ -691,8 +691,8 @@ router.post('/:id/question-stats/batch', authenticateToken, (req, res) => {
   res.json({ message: 'Статистика обновлена' });
 });
 
-// POST /api/tests/:id/results — save result
-router.post('/:id/results', optionalAuth, (req, res) => {
+// POST /api/tests/:id/results — save result (requires auth)
+router.post('/:id/results', authenticateToken, (req, res) => {
   const { score, total, time_spent, answers, mode } = req.body;
   const db = getDB();
   const test = db.prepare('SELECT id FROM tests WHERE id = ? AND is_blocked = 0').get(req.params.id);
@@ -713,19 +713,11 @@ router.post('/:id/results', optionalAuth, (req, res) => {
       mode || 'normal'
     );
 
-  const logDetails = JSON.stringify({
-    test_id: test.id,
-    score: score || 0,
-    total: total || 0,
-    mode: mode || 'normal',
-  });
-
   db.prepare(
-    `INSERT INTO user_logs (user_id, action, details, ip) VALUES (?, ?, ?, ?)`
+    `INSERT INTO user_logs (user_id, action, details, ip) VALUES (?, 'test.finish', ?, ?)`
   ).run(
-    req.user ? req.user.id : null,
-    req.user ? 'test.finish' : 'anon_take_test',
-    logDetails,
+    req.user.id,
+    JSON.stringify({ test_id: test.id, score: score || 0, total: total || 0, mode: mode || 'normal' }),
     req.ip
   );
 
