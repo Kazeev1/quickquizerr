@@ -1,33 +1,21 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-function createTransport() {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) return null;
-
-  return nodemailer.createTransport({
-    host,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: { user, pass },
-  });
-}
-
-const FROM = process.env.EMAIL_FROM || 'Quizify <noreply@quizify.org>';
 const FRONTEND = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FROM = process.env.EMAIL_FROM || 'Quizify <onboarding@resend.dev>';
 
 async function sendVerificationEmail(email, token) {
   const link = `${FRONTEND}/verify-email?token=${token}`;
-  const transport = createTransport();
 
-  if (!transport) {
-    console.log(`\n[EMAIL] Verification link for ${email}:\n${link}\n`);
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    console.log(`\n[EMAIL] RESEND_API_KEY not set. Verification link for ${email}:\n${link}\n`);
     return;
   }
 
-  await transport.sendMail({
+  const resend = new Resend(apiKey);
+
+  const { data, error } = await resend.emails.send({
     from: FROM,
     to: email,
     subject: 'Подтвердите ваш email — Quizify',
@@ -43,6 +31,13 @@ async function sendVerificationEmail(email, token) {
       </div>
     `,
   });
+
+  if (error) {
+    console.error('[EMAIL] Resend error:', JSON.stringify(error));
+    throw new Error(error.message || 'Email send failed');
+  }
+
+  console.log(`[EMAIL] Sent to ${email}, id: ${data?.id}`);
 }
 
 module.exports = { sendVerificationEmail };
